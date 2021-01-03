@@ -23,18 +23,45 @@ namespace verlet {
             return _points;
         }
 
+        const auto &constrains() const {
+            return _constrains;
+        }
+
+        auto &c(std::size_t i) {
+            return _constrains[i];
+        }
+
+        auto &p(std::size_t i) {
+            return _points[i];
+        }
+
+        void resetConstrain(std::size_t i) {
+            auto &c = _constrains[i];
+
+            c.distance = _points[c.i].p2.distance(_points[c.j].p2);
+        }
+
         std::size_t addPoint(const Point &point) {
             _points.push_back(point);
             return _points.size() - 1;
         }
 
-        std::size_t addPoint(float x, float y) {
-            _points.emplace_back(Vector2(x, y));
+        std::size_t addPoint(float x, float y, Point::Flags flags = Point::NONE) {
+            _points.emplace_back(Vector2(x, y), flags);
             return _points.size() - 1;
         }
 
         void addBorder(const Vector2 &a, const Vector2 &b) {
             _borders.emplace_back(a, b);
+        }
+
+        std::size_t addConstrain(std::size_t i, std::size_t j) {
+            addConstrain(i, j, _points[i].p2.distance(_points[j].p2));
+            return _constrains.size() - 1;
+        }
+
+        void addConstrain(std::size_t i, std::size_t j, float distance) {
+            _constrains.emplace_back(Constrain{i, j, distance});
         }
 
     private:

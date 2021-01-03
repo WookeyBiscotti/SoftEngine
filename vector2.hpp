@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utils.hpp"
 #include <wykobi.hpp>
 
 namespace verlet {
@@ -48,11 +49,41 @@ namespace verlet {
             return p;
         }
 
+        wykobi::point2d<float> wykobi() const {
+            wykobi::point2d<float> p;
+            p.x = x;
+            p.y = y;
+
+            return p;
+        }
+
         float distance(const Vector2 &other) const {
             auto a = (x - other.x);
             auto b = (y - other.y);
 
             return std::sqrt(a * a + b * b);
+        }
+
+        float length() const {
+            return std::sqrt(x * x + y * y);
+        }
+
+        float fastInvLength() const {
+            return fastInvSqrt(x * x + y * y);
+        }
+
+        Vector2 n() const {
+            auto result = Vector2(*this);
+            result /= length();
+
+            return result;
+        }
+
+        Vector2 fastN() const {
+            auto result = Vector2(*this);
+            result *= result.fastInvLength();
+
+            return result;
         }
 
         float x, y;
@@ -64,6 +95,10 @@ namespace verlet {
 
     inline Vector2 operator+(const Vector2 &a, const Vector2 &b) {
         return Vector2(a) += b;
+    }
+
+    inline float operator*(const Vector2 &a, const Vector2 &b) {
+        return a.x * b.x + a.y * b.y;
     }
 
     inline Vector2 operator*(const Vector2 &a, float b) {
