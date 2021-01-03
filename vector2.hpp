@@ -3,13 +3,13 @@
 #include "utils.hpp"
 #include <wykobi.hpp>
 
-namespace verlet {
+namespace soften {
 
-    struct Vector2 {
-        Vector2() = default;
-        Vector2(float x, float y) : x(x), y(y) {}
+    struct Vec2 {
+	    Vec2() = default;
+	    Vec2(float x, float y) : x(x), y(y) {}
 
-        auto &operator+=(const Vector2 &o) {
+        auto &operator+=(const Vec2&o) {
             x += o.x;
             y += o.y;
 
@@ -30,14 +30,14 @@ namespace verlet {
             return *this;
         }
 
-        auto &operator-=(const Vector2 &o) {
+        auto &operator-=(const Vec2&o) {
             x -= o.x;
             y -= o.y;
 
             return *this;
         }
 
-        bool approxEqual(const Vector2 &other, float epsilon = std::numeric_limits<float>::epsilon()) const {
+        bool approxEqual(const Vec2&other, float epsilon = std::numeric_limits<float>::epsilon()) const {
             return std::abs(x - other.x) <= epsilon && std::abs(y - other.y) <= epsilon;
         }
 
@@ -57,7 +57,7 @@ namespace verlet {
             return p;
         }
 
-        float distance(const Vector2 &other) const {
+        float distance(const Vec2&other) const {
             auto a = (x - other.x);
             auto b = (y - other.y);
 
@@ -72,15 +72,15 @@ namespace verlet {
             return fastInvSqrt(x * x + y * y);
         }
 
-        Vector2 n() const {
-            auto result = Vector2(*this);
+	    Vec2 n() const {
+            auto result = Vec2(*this);
             result /= length();
 
             return result;
         }
 
-        Vector2 fastN() const {
-            auto result = Vector2(*this);
+	    Vec2 fastN() const {
+            auto result = Vec2(*this);
             result *= result.fastInvLength();
 
             return result;
@@ -89,28 +89,28 @@ namespace verlet {
         float x, y;
     };
 
-    inline Vector2 operator-(const Vector2 &a, const Vector2 &b) {
-        return Vector2(a) -= b;
+    inline Vec2 operator-(const Vec2&a, const Vec2&b) {
+        return Vec2(a) -= b;
     }
 
-    inline Vector2 operator+(const Vector2 &a, const Vector2 &b) {
-        return Vector2(a) += b;
+    inline Vec2 operator+(const Vec2&a, const Vec2&b) {
+        return Vec2(a) += b;
     }
 
-    inline float operator*(const Vector2 &a, const Vector2 &b) {
+    inline float operator*(const Vec2&a, const Vec2&b) {
         return a.x * b.x + a.y * b.y;
     }
 
-    inline Vector2 operator*(const Vector2 &a, float b) {
-        return Vector2(a) *= b;
+    inline Vec2 operator*(const Vec2&a, float b) {
+        return Vec2(a) *= b;
     }
 
-    inline Vector2 operator*(float b, const Vector2 &a) {
-        return Vector2(a) *= b;
+    inline Vec2 operator*(float b, const Vec2&a) {
+        return Vec2(a) *= b;
     }
 
-    inline Vector2 operator/(const Vector2 &a, float b) {
-        return Vector2(a) /= b;
+    inline Vec2 operator/(const Vec2&a, float b) {
+        return Vec2(a) /= b;
     }
 
 
