@@ -4,9 +4,9 @@
 
 namespace soften {
 
-struct PointId {
-	explicit PointId(Id id): id(id) {}
-	Id id;
+struct PointIdx {
+	PointIdx(Id id): idx(id) {}
+	Idx idx;
 };
 
 } // namespace soften

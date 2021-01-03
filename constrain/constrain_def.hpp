@@ -7,11 +7,11 @@
 namespace soften {
 
 struct ConstrainDef {
-	ConstrainDef(PointId i, PointId j, float distance = FLOAT_NAN, FlagsStorage flags = ConstrainFlags::NONE):
+	ConstrainDef(PointIdx i, PointIdx j, float distance = FLOAT_NAN, FlagsStorage flags = ConstrainFlags::NONE):
 	    i(i), j(j), distance(distance), flags(flags) {}
 
-	PointId i;
-	PointId j;
+	PointIdx i;
+	PointIdx j;
 	float distance;
 	FlagsStorage flags;
 };

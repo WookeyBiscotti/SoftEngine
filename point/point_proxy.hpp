@@ -6,7 +6,8 @@
 namespace soften {
 
 class PointProxy final {
-	friend class Group;
+	friend struct Group;
+	friend struct GroupProxy;
 
   public:
 	Vec2 position() const;
@@ -30,36 +31,36 @@ class PointProxy final {
 	const Point& _point;
 };
 
-FlagsStorage PointProxy::flags() const {
+inline FlagsStorage PointProxy::flags() const {
 	return _point.flags;
 }
 
-void PointProxy::flags(FlagsStorage flags) {
+inline void PointProxy::flags(FlagsStorage flags) {
 	const_cast<Point&>(_point).flags = flags;
 }
 
-Vec2 PointProxy::position() const {
+inline Vec2 PointProxy::position() const {
 	return _point.p2;
 }
 
-void PointProxy::position(const Vec2& position) {
+inline void PointProxy::position(const Vec2& position) {
 	const_cast<Point&>(_point).p2 = position;
 	const_cast<Point&>(_point).p1 = position;
 }
 
-Vec2 PointProxy::curr() const {
+inline Vec2 PointProxy::curr() const {
 	return position();
 }
 
-void PointProxy::curr(const Vec2& position) const {
+inline void PointProxy::curr(const Vec2& position) const {
 	const_cast<Point&>(_point).p2 = position;
 }
 
-Vec2 PointProxy::prev() const {
+inline Vec2 PointProxy::prev() const {
 	return _point.p1;
 }
 
-void PointProxy::prev(const Vec2& position) const {
+inline void PointProxy::prev(const Vec2& position) const {
 	const_cast<Point&>(_point).p1 = position;
 }
 
