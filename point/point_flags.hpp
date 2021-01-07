@@ -8,7 +8,8 @@ struct PointFlags {
 	enum : FlagsStorage {
 		NONE = 0,
 		STATIC = 1 << 0,
-		SLEEP = 1 << 1,
+		DISABLE = 1 << 1,
+		INTERACTIVE = 1 << 2,
 	};
 };
 

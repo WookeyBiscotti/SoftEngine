@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.17)
-project(VerleEngine)
+project(SoftEn)
 
 set(CMAKE_CXX_STANDARD 20)
 
 find_package(Threads)
 
-add_executable(VerleEngine main.cpp world.cpp world.hpp vector2.hpp point.hpp)
+add_executable(${CMAKE_PROJECT_NAME} main.cpp world.cpp group/group_proxy.cpp)
 
-target_include_directories(VerleEngine PUBLIC 3rdparty/wykobi)
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC 3rdparty/wykobi)
 
-target_link_libraries(VerleEngine Threads::Threads -lsfml-graphics -lsfml-window -lsfml-system GL)
+target_link_libraries(${CMAKE_PROJECT_NAME} Threads::Threads -lsfml-graphics -lsfml-window -lsfml-system GL)
 

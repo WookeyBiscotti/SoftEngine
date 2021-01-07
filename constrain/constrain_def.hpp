@@ -3,6 +3,7 @@
 #include "../point/point_id.hpp"
 #include "../types.hpp"
 #include "../vector2.hpp"
+#include "constrain_flags.hpp"
 
 namespace soften {
 

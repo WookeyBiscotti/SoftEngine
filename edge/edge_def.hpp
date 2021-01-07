@@ -4,8 +4,9 @@
 
 namespace soften {
 
-struct GroupId {
-	Id id;
+struct EdgeDef {
+	Idx i;
+	Idx j;
 };
 
 } // namespace soften

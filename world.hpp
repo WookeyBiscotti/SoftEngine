@@ -21,20 +21,20 @@ class World {
 			return *this;
 		}
 
-		auto operator->() { return GroupProxy(_it->second); }
-		auto operator*() { return GroupProxy(_it->second); }
+		auto operator->() { return GroupProxy(&_it->second); }
+		auto operator*() { return GroupProxy(&_it->second); }
 
 		bool operator==(const GroupIterator& other) { return _it == other._it; }
 		bool operator!=(const GroupIterator& other) { return _it != other._it; }
 
 	  private:
-		GroupIterator(HashMap<Id, Group>::iterator it): _it(it) {}
+		explicit GroupIterator(HashMap<Id, Group>::iterator it): _it(it) {}
 
 		HashMap<Id, Group>::iterator _it;
 	};
 
-	GroupIterator begin() { return _groups.begin(); }
-	GroupIterator end() { return _groups.end(); }
+	GroupIterator begin() { return GroupIterator(_groups.begin()); }
+	GroupIterator end() { return GroupIterator(_groups.end()); }
 
 	void gravity(const Vec2& gravity) { _gravity = gravity; }
 
@@ -46,6 +46,12 @@ class World {
 
 	GroupId create(const GroupDef& def);
 	GroupProxy get(GroupId id);
+
+  private:
+	void updateAABB(Group& group);
+	void updateShells(Group& group);
+	void updatePosition(Group& group, float step);
+	void updateConstrain(Group& group);
 
   private:
 	float _lastStep = std::numeric_limits<float>::signaling_NaN();
