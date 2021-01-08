@@ -10,6 +10,7 @@ struct PointFlags {
 		STATIC = 1 << 0,
 		DISABLE = 1 << 1,
 		INTERACTIVE = 1 << 2,
+		SHELL = 1 << 3,
 	};
 };
 

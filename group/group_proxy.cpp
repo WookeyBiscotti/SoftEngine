@@ -8,6 +8,6 @@ void GroupProxy::addShall(const ShellDef& def) {
 		_group->shell.edges[i].i = def.edges[i].i;
 		_group->shell.edges[i].j = def.edges[i].j;
 
-		_group->points[_group->shell.edges[i].j].flags |= PointFlags::INTERACTIVE;
+		_group->points[_group->shell.edges[i].j].flags |= PointFlags::SHELL;
 	}
 }

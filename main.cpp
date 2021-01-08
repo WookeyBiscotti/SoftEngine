@@ -10,7 +10,7 @@ auto makeCube(soften::World& world, soften::Vec2 pos) {
 	auto bodyId = world.create(soften::GroupDef());
 	auto body = world.get(bodyId);
 
-	auto eps = [] { return rand() % 10'000 / 10'000'0.0f; };
+	auto eps = [] { return 0.0f; };
 
 	body.createPoint(pos + Vec2{0.5f + eps(), 0.5f + eps()});
 	body.createPoint(pos + Vec2{-0.5f + eps(), 0.5f + eps()});
@@ -69,32 +69,6 @@ void makeBorders(soften::World& world) {
 	makeRect(world, Rect2{Vec2(20, -2), Vec2(2, 14)}, PointFlags::STATIC);
 }
 
-auto makeCube2(soften::World& world, soften::Vec2 pos) {
-	auto bodyId = world.create(soften::GroupDef());
-	auto body = world.get(bodyId);
-	body.createPoint(pos + Vec2{0.5f, -0.5f});
-	body.createPoint(pos + Vec2{-0.5f, -0.5f});
-	body.createPoint(pos + Vec2{-0.5f, 0.5f});
-	body.createPoint(pos + Vec2{0.5f, 0.5f});
-
-	body.createConstrain(0, 1);
-	body.createConstrain(1, 2);
-	body.createConstrain(2, 3);
-	body.createConstrain(3, 0);
-	body.createConstrain(0, 2);
-	body.createConstrain(1, 3);
-
-	ShellDef shell;
-	shell.edges.push_back({0, 1});
-	shell.edges.push_back({1, 2});
-	shell.edges.push_back({2, 3});
-	shell.edges.push_back({3, 0});
-
-	body.addShall(shell);
-
-	return body;
-}
-
 auto makePlate(soften::World& world, soften::Vec2 pos) {
 	auto body = world.get(world.create(soften::GroupDef()));
 
@@ -106,24 +80,27 @@ auto makePlate(soften::World& world, soften::Vec2 pos) {
 
 	for (int x = 0; x != SIZEX; ++x) {
 		for (int y = 0; y != SIZEY; ++y) {
-			ids[x][y] = body.createPoint(pos + Vec2{pos.x + STEP * x, pos.x + STEP * y}).idx;
+			ids[x][y] =
+			    body.createPoint(pos + Vec2{pos.x + STEP * x, pos.x + STEP * y}, PointFlags::INTERACTIVE, 0.01f).idx;
 		}
 	}
 
 	for (int x = 0; x != SIZEX; ++x) {
 		for (int y = 0; y != SIZEY; ++y) {
 			if (x != SIZEX - 1) {
-				body.createConstrain(ids[x][y], ids[x + 1][y], ConstrainFlags::WORKS_IF_GREATER);
+				body.createConstrain(ids[x][y], ids[x + 1][y]);
+				//				body.createConstrain(ids[x][y], ids[x + 1][y], ConstrainFlags::WORKS_IF_GREATER);
 			}
 			if (y != SIZEY - 1) {
-				body.createConstrain(ids[x][y], ids[x][y + 1], ConstrainFlags::WORKS_IF_GREATER);
+				body.createConstrain(ids[x][y], ids[x][y + 1]);
+				//				body.createConstrain(ids[x][y], ids[x][y + 1], ConstrainFlags::WORKS_IF_GREATER);
 			}
 		}
 	}
 
-	for (int x = 0; x != SIZEX; ++x) {
-		body.p(ids[x][0]).flags(PointFlags::STATIC);
-	}
+	//	for (int x = 0; x != SIZEX; ++x) {
+	//		body.p(ids[x][0]).flags(PointFlags::STATIC);
+	//	}
 
 	return body;
 }
@@ -137,10 +114,10 @@ int main() {
 	window.setView(view);
 
 	soften::World world;
-	world.gravity({0, -10});
+	world.gravity({0, -20});
 
-	auto bodyId = world.create(soften::GroupDef());
-	auto body = world.get(bodyId);
+//	auto bodyId = world.create(soften::GroupDef());
+//	auto body = world.get(bodyId);
 
 	//	int SIZE = 5;
 	//	for (int a = 0; a < SIZE; ++a) {
@@ -153,7 +130,8 @@ int main() {
 	//	}
 
 	//	body = makePlate(world, {1, 1});
-	body = makeCube(world, {1, 1});
+//	auto body = makePlate(world, {1, 4});
+	auto body = makeCube(world, {1, 4});
 
 	//	{
 	//		auto bodyId1 = world.create(soften::GroupDef());
@@ -262,10 +240,10 @@ int main() {
 				window.draw(line, 2, sf::Lines);
 			}
 
-			//			rect.setPosition(body.aabb().position.x, body.aabb().position.y);
-			//			rect.setSize({body.aabb().size.x, body.aabb().size.y});
-			//
-			//			window.draw(rect);
+//			rect.setPosition(body.aabb().position.x, body.aabb().position.y);
+//			rect.setSize({body.aabb().size.x, body.aabb().size.y});
+//
+//			window.draw(rect);
 		}
 
 		sf::sleep(sf::milliseconds(1'000 / 60));

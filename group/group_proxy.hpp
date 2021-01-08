@@ -30,7 +30,7 @@ class GroupProxy {
 	void fitConstrain(ConstrainIdx id);
 
 	PointIdx createPoint(const PointDef& p);
-	PointIdx createPoint(const Vec2& v, FlagsStorage flags = PointFlags::NONE);
+	PointIdx createPoint(const Vec2& v, FlagsStorage flags = PointFlags::NONE, float m = 1.0f);
 
 	ConstrainIdx createConstrain(const ConstrainDef& c);
 	ConstrainIdx createConstrain(PointIdx i, PointIdx j, FlagsStorage flags = ConstrainFlags::NONE);
@@ -52,8 +52,8 @@ inline PointIdx GroupProxy::createPoint(const PointDef& p) {
 	return PointIdx(_group->points.size() - 1);
 }
 
-inline PointIdx GroupProxy::createPoint(const Vec2& v, FlagsStorage flags) {
-	_group->points.emplace_back(v, v, flags);
+inline PointIdx GroupProxy::createPoint(const Vec2& v, FlagsStorage flags, float m) {
+	_group->points.emplace_back(v, v, flags, m);
 
 	return PointIdx(_group->points.size() - 1);
 }
