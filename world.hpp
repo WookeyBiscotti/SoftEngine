@@ -40,7 +40,7 @@ class World {
 
 	const Vec2& gravity() const { return _gravity; }
 
-	void update(float step);
+	void update(float step, int iterations = 10);
 
 	void addBorder(const Vec2& a, const Vec2& b) { _borders.emplace_back(a, b); }
 
@@ -51,7 +51,7 @@ class World {
 	void updateAABB(Group& group);
 	void updateShells(Group& group);
 	void updatePosition(Group& group, float step);
-	void updateConstrain(Group& group);
+	void updateConstrain(Group& group, float step);
 
   private:
 	float _lastStep = std::numeric_limits<float>::signaling_NaN();

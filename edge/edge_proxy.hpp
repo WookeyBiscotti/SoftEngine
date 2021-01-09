@@ -12,11 +12,14 @@ class EdgeProxy {
 	PointIdx i() const { return _edge->i; }
 	PointIdx j() const { return _edge->j; }
 
-  private:
-	EdgeProxy(const Edge* edge): _edge(edge) {}
+	float friction() const { return _edge->friction; }
+	void friction(float friction) { _edge->friction = friction; }
 
   private:
-	const Edge* _edge;
+	EdgeProxy(const Edge* edge): _edge(const_cast<Edge*>(edge)) {}
+
+  private:
+	Edge* _edge;
 };
 
 } // namespace soften

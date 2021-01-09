@@ -12,29 +12,54 @@ class ConstrainProxy final {
 
   public:
 	FlagsStorage flags() const;
-	void flags(FlagsStorage flags);
+	ConstrainProxy& flags(FlagsStorage flags);
 
-	void i(PointIdx i) { const_cast<Constrain&>(_constrain).i = i.idx; }
-	PointIdx i() const { return PointIdx(_constrain.i); }
+	void i(PointIdx i) { _constrain->i = i.idx; }
+	PointIdx i() const { return PointIdx(_constrain->i); }
 
-	void j(PointIdx j) { const_cast<Constrain&>(_constrain).j = j.idx; }
-	PointIdx j() const { return PointIdx(_constrain.j); }
+	void j(PointIdx j) { _constrain->j = j.idx; }
+	PointIdx j() const { return PointIdx(_constrain->j); }
+
+	float hookCoeff() const;
+	ConstrainProxy& hookCoeff(float coeff);
+
+	float distance() const;
+	ConstrainProxy& distance(float distance);
 
   private:
-	explicit ConstrainProxy(const Constrain& Constrain): _constrain(Constrain) {}
+	explicit ConstrainProxy(const Constrain* constrain): _constrain(const_cast<Constrain*>(constrain)) {}
 	ConstrainProxy() = delete;
 	ConstrainProxy(const ConstrainProxy&) = delete;
 
   private:
-	const Constrain& _constrain;
+	Constrain* _constrain;
 };
 
 inline FlagsStorage ConstrainProxy::flags() const {
-	return _constrain.flags;
+	return _constrain->flags;
 }
 
-inline void ConstrainProxy::flags(FlagsStorage flags) {
-	const_cast<Constrain&>(_constrain).flags = flags;
+inline ConstrainProxy& ConstrainProxy::flags(FlagsStorage flags) {
+	_constrain->flags = flags;
+	return *this;
+}
+
+inline float ConstrainProxy::hookCoeff() const {
+	return _constrain->hookCoeff;
+}
+
+inline ConstrainProxy& ConstrainProxy::hookCoeff(float coeff) {
+	_constrain->hookCoeff = coeff;
+	return *this;
+}
+
+inline float ConstrainProxy::distance() const {
+	return _constrain->distance;
+}
+
+inline ConstrainProxy& ConstrainProxy::distance(float distance) {
+	_constrain->distance = distance;
+	return *this;
 }
 
 } // namespace soften

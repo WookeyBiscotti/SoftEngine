@@ -7,6 +7,7 @@ namespace soften {
 struct Edge {
 	Idx i;
 	Idx j;
+	float friction;
 };
 
 } // namespace soften

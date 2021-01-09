@@ -7,6 +7,7 @@ void GroupProxy::addShall(const ShellDef& def) {
 	for (ulong i = 0; i != _group->shell.edges.size(); ++i) {
 		_group->shell.edges[i].i = def.edges[i].i;
 		_group->shell.edges[i].j = def.edges[i].j;
+		_group->shell.edges[i].friction = def.edges[i].friction;
 
 		_group->points[_group->shell.edges[i].j].flags |= PointFlags::SHELL;
 	}

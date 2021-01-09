@@ -85,11 +85,11 @@ inline PointProxy GroupProxy::p(PointIdx id) {
 }
 
 inline const ConstrainProxy GroupProxy::c(ConstrainIdx id) const {
-	return ConstrainProxy(_group->constrains[id.id]);
+	return ConstrainProxy(&_group->constrains[id.id]);
 }
 
 inline ConstrainProxy GroupProxy::c(ConstrainIdx id) {
-	return ConstrainProxy(_group->constrains[id.id]);
+	return ConstrainProxy(&_group->constrains[id.id]);
 }
 
 inline void GroupProxy::fitConstrain(ConstrainIdx id) {

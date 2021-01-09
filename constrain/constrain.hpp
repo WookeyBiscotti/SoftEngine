@@ -4,8 +4,8 @@
 
 namespace soften {
 struct Constrain {
-	Constrain(Id i, Id j, float distance, FlagsStorage flags = ConstrainFlags::NONE):
-	    i(i), j(j), distance(distance), flags(flags) {}
+	Constrain(Id i, Id j, float distance, FlagsStorage flags = ConstrainFlags::NONE, float hookCoeff = 0.0f):
+	    i(i), j(j), distance(distance), flags(flags), hookCoeff(hookCoeff) {}
 	Constrain() = default;
 
 	bool is(FlagsStorage flag) const { return this->flags & flag; }
@@ -13,6 +13,7 @@ struct Constrain {
 	Id i;
 	Id j;
 	float distance;
+	float hookCoeff;
 	FlagsStorage flags;
 };
 } // namespace soften

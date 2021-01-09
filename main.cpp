@@ -17,12 +17,49 @@ auto makeCube(soften::World& world, soften::Vec2 pos) {
 	body.createPoint(pos + Vec2{-0.5f + eps(), -0.5f + eps()});
 	body.createPoint(pos + Vec2{0.5f + eps(), -0.5f + eps()});
 
-	body.createConstrain(0, 1);
-	body.createConstrain(1, 2);
-	body.createConstrain(2, 3);
-	body.createConstrain(3, 0);
-	body.createConstrain(0, 2);
-	body.createConstrain(1, 3);
+	float Coeff = 1 * (1.0 / 60.0f) * (1.0 / 60.0f);
+	Coeff = 1 / Coeff;
+
+
+
+    auto id = body.createConstrain(0, 1);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+    id = body.createConstrain(1, 2);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+    id = body.createConstrain(2, 3);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+    id = body.createConstrain(3, 0);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+    id = body.createConstrain(0, 2);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(1.0f);
+    id = body.createConstrain(1, 3);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(1.0f);
+
+    body.createConstrain(0, 1);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+    id = body.createConstrain(1, 2);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+    id = body.createConstrain(2, 3);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+    id = body.createConstrain(3, 0);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+    id = body.createConstrain(0, 2);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(2.0f);
+    id = body.createConstrain(1, 3);
+    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(2.0f);
+
+    id = body.createConstrain(0, 1);
+    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+    id = body.createConstrain(1, 2);
+    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+    id = body.createConstrain(2, 3);
+    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+    id = body.createConstrain(3, 0);
+    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+    id = body.createConstrain(0, 2);
+    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+    id = body.createConstrain(1, 3);
+    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
 
 	ShellDef shell;
 	shell.edges.push_back({0, 1});
@@ -62,7 +99,7 @@ auto makeRect(soften::World& world, soften::Rect2 rect, FlagsStorage flags) {
 }
 
 void makeBorders(soften::World& world) {
-	makeRect(world, Rect2{Vec2(-2, -2), Vec2(24, 2)}, PointFlags::STATIC);
+	makeRect(world, Rect2{Vec2(-2, -1), Vec2(24, 2)}, PointFlags::STATIC);
 	makeRect(world, Rect2{Vec2(-2, 10), Vec2(24, 2)}, PointFlags::STATIC);
 
 	makeRect(world, Rect2{Vec2(-2, -2), Vec2(2, 14)}, PointFlags::STATIC);
@@ -81,19 +118,21 @@ auto makePlate(soften::World& world, soften::Vec2 pos) {
 	for (int x = 0; x != SIZEX; ++x) {
 		for (int y = 0; y != SIZEY; ++y) {
 			ids[x][y] =
-			    body.createPoint(pos + Vec2{pos.x + STEP * x, pos.x + STEP * y}, PointFlags::INTERACTIVE, 0.01f).idx;
+			    body.createPoint(pos + Vec2{pos.x + STEP * x, pos.x + STEP * y},
+			            (x == 0 || x == SIZEX - 1 || y == 0 || y == SIZEY - 1 ? PointFlags::INTERACTIVE : 0), 0.01f)
+			        .idx;
 		}
 	}
 
 	for (int x = 0; x != SIZEX; ++x) {
 		for (int y = 0; y != SIZEY; ++y) {
 			if (x != SIZEX - 1) {
-				body.createConstrain(ids[x][y], ids[x + 1][y]);
-				//				body.createConstrain(ids[x][y], ids[x + 1][y], ConstrainFlags::WORKS_IF_GREATER);
+				//				body.createConstrain(ids[x][y], ids[x + 1][y]);
+				body.createConstrain(ids[x][y], ids[x + 1][y], ConstrainFlags::WORKS_IF_GREATER);
 			}
 			if (y != SIZEY - 1) {
-				body.createConstrain(ids[x][y], ids[x][y + 1]);
-				//				body.createConstrain(ids[x][y], ids[x][y + 1], ConstrainFlags::WORKS_IF_GREATER);
+				//				body.createConstrain(ids[x][y], ids[x][y + 1]);
+				body.createConstrain(ids[x][y], ids[x][y + 1], ConstrainFlags::WORKS_IF_GREATER);
 			}
 		}
 	}
@@ -116,8 +155,8 @@ int main() {
 	soften::World world;
 	world.gravity({0, -20});
 
-//	auto bodyId = world.create(soften::GroupDef());
-//	auto body = world.get(bodyId);
+	//	auto bodyId = world.create(soften::GroupDef());
+	//	auto body = world.get(bodyId);
 
 	//	int SIZE = 5;
 	//	for (int a = 0; a < SIZE; ++a) {
@@ -130,8 +169,8 @@ int main() {
 	//	}
 
 	//	body = makePlate(world, {1, 1});
-//	auto body = makePlate(world, {1, 4});
-	auto body = makeCube(world, {1, 4});
+	auto body = makePlate(world, {1, 4});
+	//	auto body = makeCube(world, {1, 4});
 
 	//	{
 	//		auto bodyId1 = world.create(soften::GroupDef());
@@ -211,7 +250,7 @@ int main() {
 			}
 		}
 
-		world.update(1.0 / 60);
+		world.update(1.0 / 60, 10);
 
 		window.clear();
 
@@ -240,10 +279,10 @@ int main() {
 				window.draw(line, 2, sf::Lines);
 			}
 
-//			rect.setPosition(body.aabb().position.x, body.aabb().position.y);
-//			rect.setSize({body.aabb().size.x, body.aabb().size.y});
-//
-//			window.draw(rect);
+			//			rect.setPosition(body.aabb().position.x, body.aabb().position.y);
+			//			rect.setSize({body.aabb().size.x, body.aabb().size.y});
+			//
+			//			window.draw(rect);
 		}
 
 		sf::sleep(sf::milliseconds(1'000 / 60));

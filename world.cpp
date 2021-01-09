@@ -64,55 +64,16 @@ GroupProxy World::get(GroupId id) {
 	return GroupProxy(&_groups[id.id]);
 }
 
-void World::update(float step) {
+void World::update(float step, int iterations) {
 	if (std::isnan(_lastStep)) {
-		_lastStep = step;
+		_lastStep = step / iterations;
 	}
 
-	for (auto& [_, g] : _groups) {
-		updatePosition(g, step);
-		//
-		//		for (auto& p : g.points) {
-		//			if (p.is(PointFlags::STATIC)) {
-		//				continue;
-		//			}
-		//			for (const auto& [a, b] : _borders) {
-		//				Vec2 o;
-		//				if (isIntersecting(a, b, p.p1, p.p2, o)) {
-		//					const auto l = Vec2(a - b).fastN();
-		//					auto p1o = o - p.p1;
-		//					auto p2o = o - p.p2;
-		//					p.p1 = o + (p1o - 2 * l * (p1o * l));
-		//					p.p2 = o + (p2o - 2 * l * (p2o * l));
-		//				}
-		//			}
-		//		}
-
-		//		updateAABB(g);
-	}
-	for (int rr = 0; rr < 3; ++rr) {
+	for (int rr = 0; rr < iterations; ++rr) {
 		for (auto& [_, g] : _groups) {
-			updateConstrain(g);
-		}
-	}
-	for (auto& [_, g] : _groups) {
-		updateAABB(g);
-	}
-	for (int rr = 0; rr < 1; ++rr) {
-		for (auto& [_, g] : _groups) {
-			updateShells(g);
-		}
-	}
-	for (int rr = 0; rr < 1; ++rr) {
-		for (auto& [_, g] : _groups) {
-			updateConstrain(g);
-		}
-	}
-
-	for (int rr = 0; rr < 30; ++rr) {
-		for (auto& [_, g] : _groups) {
+			updatePosition(g, step / iterations);
+			updateConstrain(g, step / iterations);
 			updateAABB(g);
-            updateConstrain(g);
 			updateShells(g);
 		}
 	}
@@ -120,16 +81,8 @@ void World::update(float step) {
 	for (auto& [_, g] : _groups) {
 		updateAABB(g);
 	}
-	//
-	//	for (auto& [_, g] : _groups) {
-	//		updateShells(g);
-	//	}
-	//
-	//	for (auto& [_, g] : _groups) {
-	//		for (int rr = 0; rr < 10; ++rr) {
-	//			updateConstrain(g);
-	//		}
-	//	}
+
+	_lastStep = step / iterations;
 }
 
 void World::updateAABB(Group& g) {
@@ -175,17 +128,17 @@ inline float fast_sign(float f) {
 }
 
 void World::updateShells(Group& group) {
-	// TODO: optimize!!!
-	//	for (auto& [_, g] : _groups) {
-	//		if (g.shell.edges.empty()) {
-	//			continue;
-	//		}
-	//		Vec2 center{0, 0};
-	//		for (const auto& e : g.shell.edges) {
-	//			center += g.points[e.i].p2;
-	//		}
-	//		g.shell.center = center / g.shell.edges.size();
-	//	}
+	//	 TODO: optimize!!!
+	for (auto& [_, g] : _groups) {
+		if (g.shell.edges.empty()) {
+			continue;
+		}
+		Vec2 center{0, 0};
+		for (const auto& e : g.shell.edges) {
+			center += g.points[e.i].p2;
+		}
+		g.shell.center = center / g.shell.edges.size();
+	}
 
 	for (auto& [_, other] : _groups) {
 		if (&other == &group || other.shell.edges.empty() || !isIntersecting(other.aabb, group.aabb)) {
@@ -235,7 +188,6 @@ void World::updateShells(Group& group) {
 			auto& l2 = points[e.j];
 
 			const auto& l = (l2.p2 - l1.p2).fastN();
-			const float& lInvLen = l.fastInvLength();
 			const float a1 = l * (p.p2 - l1.p2).fastN();
 			const float a2 = l * (l2.p2 - p.p2).fastN();
 
@@ -253,6 +205,7 @@ void World::updateShells(Group& group) {
 			}
 			if (!p.is(PointFlags::STATIC)) {
 				p.p2 += dp * l1m * l2m / devider;
+				p.p1 += (((p.p2 - p.p1) * l) * e.friction) * l;
 			}
 		}
 
@@ -275,7 +228,6 @@ void World::updateShells(Group& group) {
 			auto& points = other.points;
 
 			float minPenetration = std::numeric_limits<float>::max();
-			float PP = std::numeric_limits<float>::max();
 			size_t minIdx = -1;
 			Vec2 minN;
 
@@ -303,13 +255,12 @@ void World::updateShells(Group& group) {
 			}
 
 			// TODO: Change to more physics formula
-			const auto dp = minPenetration * minN;
+			const auto dPenetration = minPenetration * minN;
 			const auto& e = edges[minIdx];
 			auto& l1 = points[e.i];
 			auto& l2 = points[e.j];
 
 			const auto& l = (l2.p2 - l1.p2).fastN();
-			const float& lInvLen = l.fastInvLength();
 			const float a1 = l * (p.p2 - l1.p2);
 			const float a2 = l * (l2.p2 - p.p2);
 
@@ -320,87 +271,14 @@ void World::updateShells(Group& group) {
 
 			const float devider = (l1m * l2m + (l1m + l2m) * pm);
 			if (!l1.is(PointFlags::STATIC)) {
-				l1.p2 -= a2 * dp * pm * l2m / devider;
+				l1.p2 -= a2 * dPenetration * pm * l2m / devider;
 			}
 			if (!l2.is(PointFlags::STATIC)) {
-				l2.p2 -= a1 * dp * l2m * pm / devider;
+				l2.p2 -= a1 * dPenetration * l2m * pm / devider;
 			}
 			if (!p.is(PointFlags::STATIC)) {
-				p.p2 += dp * l1m * l2m / devider;
-			}
-		}
-
-		continue;
-		for (auto& edge : group.shell.edges) {
-			const auto ratio = 0.5f;
-			//			const auto ratio = rand() % 1000 / 1000.0f;
-			auto p = ratio * group.points[edge.i].p2 + (1 - ratio) * group.points[edge.j].p2;
-
-			if (!isIntersecting(other.aabb, p) || !isIntersecting(other.shell.edges, other.points, p)) {
-				continue;
-			}
-
-			auto& edges = other.shell.edges;
-			auto& points = other.points;
-			auto& p1 = group.points[edge.i];
-			auto& p2 = group.points[edge.j];
-
-			float minPenetration = std::numeric_limits<float>::max();
-			float minPenetrationShell = std::numeric_limits<float>::max();
-			size_t minIdx = -1;
-			Vec2 minN;
-
-			for (size_t i = 0; i != edges.size(); ++i) {
-				const auto& e = edges[i];
-				const Vec2& l1 = points[e.i].p2;
-				const Vec2& l2 = points[e.j].p2;
-
-				if (points[e.i].is(PointFlags::STATIC) && points[e.j].is(PointFlags::STATIC) &&
-				    p1.is(PointFlags::STATIC) && p2.is(PointFlags::STATIC)) {
-					continue;
-				}
-
-				const Vec2& l = (l2 - l1);
-				const Vec2& n = Vec2(l.y, -l.x).fastN();
-
-				const auto penetration = (l2 - p) * n;
-
-				if (penetration < minPenetration) {
-					minPenetration = penetration;
-					minN = n;
-					minIdx = i;
-				}
-			}
-
-			if (minIdx == -1) {
-				continue;
-			}
-
-			// TODO: Change to more physics formula
-			const auto dp = minPenetration * minN;
-
-			const auto& e = edges[minIdx];
-			auto& l1 = points[e.i];
-			auto& l2 = points[e.j];
-
-			const float staticM = 1000 * std::max(std::max(std::max(l1.m, l2.m), p1.m), p2.m);
-			float l1m = l1.is(PointFlags::STATIC) ? staticM : l1.m;
-			float l2m = l2.is(PointFlags::STATIC) ? staticM : l2.m;
-			float p1m = p1.is(PointFlags::STATIC) ? staticM : p1.m;
-			float p2m = p2.is(PointFlags::STATIC) ? staticM : p2.m;
-
-			const float devider = (l1m * l2m * p1m + l1m * l2m * p2m + l1m * p1m * p2m + l2m * p1m * p2m);
-			if (!l1.is(PointFlags::STATIC)) {
-				l1.p2 -= dp * l2m * p1m * p2m / devider;
-			}
-			if (!l2.is(PointFlags::STATIC)) {
-				l2.p2 -= dp * l1m * p1m * p2m / devider;
-			}
-			if (!p1.is(PointFlags::STATIC)) {
-				p1.p2 += dp * l1m * l2m * p2m / devider;
-			}
-			if (!p2.is(PointFlags::STATIC)) {
-				p2.p2 += dp * l1m * l2m * p1m / devider;
+				p.p2 += dPenetration * l1m * l2m / devider;
+				p.p1 += (((p.p2 - p.p1) * l) * e.friction) * l;
 			}
 		}
 	}
@@ -419,7 +297,7 @@ void World::updatePosition(Group& group, float step) {
 	}
 }
 
-void World::updateConstrain(Group& group) {
+void World::updateConstrain(Group& group, float step) {
 	for (const auto& c : group.constrains) {
 		if (c.is(ConstrainFlags::DISABLE)) {
 			continue;
@@ -435,7 +313,19 @@ void World::updateConstrain(Group& group) {
 			continue;
 		}
 
-		const auto dT = 0.5f * t * (c.distance * invD - 1.0f);
+		if (c.is(ConstrainFlags::WORKS_IF_LOWER) && invD * c.distance < 1.0f) {
+			continue;
+		}
+
+		float coeff = 0.5f * (c.distance * invD - 1.0f);
+		if (c.is(ConstrainFlags::USE_HOOK_COEFF)) {
+			float coeffWithHook = 0.5f * (c.hookCoeff * step * step * (c.distance * invD - 1.0f));
+			if (std::fabs(coeffWithHook) < std::fabs(coeff)) {
+				coeff = coeffWithHook;
+			}
+		}
+
+		const auto dT = t * coeff;
 
 		if (pa.is(PointFlags::STATIC)) {
 			if (pb.is(PointFlags::STATIC)) {
