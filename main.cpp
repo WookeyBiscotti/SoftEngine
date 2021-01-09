@@ -63,7 +63,7 @@ auto makeRect(soften::World& world, soften::Rect2 rect, FlagsStorage flags) {
 
 void makeBorders(soften::World& world) {
 	makeRect(world, Rect2{Vec2(-2, -2), Vec2(24, 2)}, PointFlags::STATIC);
-	makeRect(world, Rect2{Vec2(-2, 12), Vec2(24, 2)}, PointFlags::STATIC);
+	makeRect(world, Rect2{Vec2(-2, 10), Vec2(24, 2)}, PointFlags::STATIC);
 
 	makeRect(world, Rect2{Vec2(-2, -2), Vec2(2, 14)}, PointFlags::STATIC);
 	makeRect(world, Rect2{Vec2(20, -2), Vec2(2, 14)}, PointFlags::STATIC);

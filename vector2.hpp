@@ -82,6 +82,8 @@ struct Vec2 {
 		return result;
 	}
 
+	float cross(const Vec2& other) const { return x * other.y - y * other.x; }
+
 	float x, y;
 };
 

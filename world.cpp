@@ -109,9 +109,10 @@ void World::update(float step) {
 		}
 	}
 
-	for (int rr = 0; rr < 1; ++rr) {
+	for (int rr = 0; rr < 30; ++rr) {
 		for (auto& [_, g] : _groups) {
 			updateAABB(g);
+            updateConstrain(g);
 			updateShells(g);
 		}
 	}
@@ -165,6 +166,12 @@ void World::updateAABB(Group& g) {
 	} else {
 		g.aabb = {};
 	}
+}
+
+inline float fast_sign(float f) {
+	if (f > 0)
+		return 1;
+	return (f == 0) ? 0 : -1;
 }
 
 void World::updateShells(Group& group) {
@@ -249,6 +256,81 @@ void World::updateShells(Group& group) {
 			}
 		}
 
+		for (size_t j = 0; j != group.shell.edges.size(); ++j) {
+			auto& p = group.points[group.shell.edges[j].j];
+			auto& pr = group.points[group.shell.edges[j].i];
+			auto& pl = group.points[group.shell.edges[(j + 1) % group.shell.edges.size()].j];
+
+			if (p.flags & PointFlags::STATIC || !(p.flags & PointFlags::SHELL) || !isIntersecting(other.aabb, p.p2) ||
+			    !isIntersecting(other.shell.edges, other.points, p.p2)) {
+				continue;
+			}
+
+			const auto lr = (pr.p2 - p.p2);
+			const auto ll = (pl.p2 - p.p2);
+
+			const auto pn = fast_sign(ll.cross(lr)) * ((pl.p2 - p.p2).fastN() + (pr.p2 - p.p2).fastN()).fastN();
+
+			auto& edges = other.shell.edges;
+			auto& points = other.points;
+
+			float minPenetration = std::numeric_limits<float>::max();
+			float PP = std::numeric_limits<float>::max();
+			size_t minIdx = -1;
+			Vec2 minN;
+
+			for (size_t i = 0; i != edges.size(); ++i) {
+				const auto& e = edges[i];
+				const Vec2& l1 = points[e.i].p2;
+				const Vec2& l2 = points[e.j].p2;
+
+				if (points[e.i].is(PointFlags::STATIC) && points[e.j].is(PointFlags::STATIC) &&
+				    p.is(PointFlags::STATIC)) {
+					continue;
+				}
+
+				const Vec2& l = (l2 - l1);
+				const Vec2& n = Vec2(l.y, -l.x).fastN();
+				const auto penetration = (l2 - p.p2) * n;
+				if (pn * n > 0 && penetration < minPenetration) {
+					minPenetration = penetration;
+					minN = n;
+					minIdx = i;
+				}
+			}
+			if (minIdx == -1) {
+				continue;
+			}
+
+			// TODO: Change to more physics formula
+			const auto dp = minPenetration * minN;
+			const auto& e = edges[minIdx];
+			auto& l1 = points[e.i];
+			auto& l2 = points[e.j];
+
+			const auto& l = (l2.p2 - l1.p2).fastN();
+			const float& lInvLen = l.fastInvLength();
+			const float a1 = l * (p.p2 - l1.p2);
+			const float a2 = l * (l2.p2 - p.p2);
+
+			const float staticM = 1000 * std::max(std::max(l1.m, l2.m), p.m);
+			float l1m = l1.is(PointFlags::STATIC) ? staticM : l1.m;
+			float l2m = l2.is(PointFlags::STATIC) ? staticM : l2.m;
+			float pm = p.is(PointFlags::STATIC) ? staticM : p.m;
+
+			const float devider = (l1m * l2m + (l1m + l2m) * pm);
+			if (!l1.is(PointFlags::STATIC)) {
+				l1.p2 -= a2 * dp * pm * l2m / devider;
+			}
+			if (!l2.is(PointFlags::STATIC)) {
+				l2.p2 -= a1 * dp * l2m * pm / devider;
+			}
+			if (!p.is(PointFlags::STATIC)) {
+				p.p2 += dp * l1m * l2m / devider;
+			}
+		}
+
+		continue;
 		for (auto& edge : group.shell.edges) {
 			const auto ratio = 0.5f;
 			//			const auto ratio = rand() % 1000 / 1000.0f;
@@ -264,6 +346,7 @@ void World::updateShells(Group& group) {
 			auto& p2 = group.points[edge.j];
 
 			float minPenetration = std::numeric_limits<float>::max();
+			float minPenetrationShell = std::numeric_limits<float>::max();
 			size_t minIdx = -1;
 			Vec2 minN;
 
