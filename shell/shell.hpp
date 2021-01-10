@@ -6,7 +6,6 @@ namespace soften {
 
 struct Shell {
 	DynArray<Edge> edges;
-	Vec2 center;
 };
 
 } // namespace soften

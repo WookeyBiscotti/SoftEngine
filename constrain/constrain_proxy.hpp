@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../point/point_id.hpp"
-#include "../types.hpp"
+#include "../utils/types.hpp"
 #include "constrain.hpp"
 
 namespace soften {

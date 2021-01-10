@@ -17,49 +17,47 @@ auto makeCube(soften::World& world, soften::Vec2 pos) {
 	body.createPoint(pos + Vec2{-0.5f + eps(), -0.5f + eps()});
 	body.createPoint(pos + Vec2{0.5f + eps(), -0.5f + eps()});
 
-	float Coeff = 1 * (1.0 / 60.0f) * (1.0 / 60.0f);
+	float Coeff = 0.1f * (1.0 / 60.0f) * (1.0 / 60.0f);
 	Coeff = 1 / Coeff;
 
+	auto id = body.createConstrain(0, 1);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+	id = body.createConstrain(1, 2);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+	id = body.createConstrain(2, 3);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+	id = body.createConstrain(3, 0);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+	id = body.createConstrain(0, 2);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(1.0f);
+	id = body.createConstrain(1, 3);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(1.0f);
 
+	//	body.createConstrain(0, 1);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+	//	id = body.createConstrain(1, 2);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+	//	id = body.createConstrain(2, 3);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+	//	id = body.createConstrain(3, 0);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+	//	id = body.createConstrain(0, 2);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(2.0f);
+	//	id = body.createConstrain(1, 3);
+	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(2.0f);
 
-    auto id = body.createConstrain(0, 1);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
-    id = body.createConstrain(1, 2);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
-    id = body.createConstrain(2, 3);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
-    id = body.createConstrain(3, 0);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
-    id = body.createConstrain(0, 2);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(1.0f);
-    id = body.createConstrain(1, 3);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(1.0f);
-
-    body.createConstrain(0, 1);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
-    id = body.createConstrain(1, 2);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
-    id = body.createConstrain(2, 3);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
-    id = body.createConstrain(3, 0);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
-    id = body.createConstrain(0, 2);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(2.0f);
-    id = body.createConstrain(1, 3);
-    body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(2.0f);
-
-    id = body.createConstrain(0, 1);
-    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
-    id = body.createConstrain(1, 2);
-    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
-    id = body.createConstrain(2, 3);
-    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
-    id = body.createConstrain(3, 0);
-    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
-    id = body.createConstrain(0, 2);
-    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
-    id = body.createConstrain(1, 3);
-    body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	//	id = body.createConstrain(0, 1);
+	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	//	id = body.createConstrain(1, 2);
+	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	//	id = body.createConstrain(2, 3);
+	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	//	id = body.createConstrain(3, 0);
+	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	//	id = body.createConstrain(0, 2);
+	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	//	id = body.createConstrain(1, 3);
+	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
 
 	ShellDef shell;
 	shell.edges.push_back({0, 1});
@@ -140,6 +138,8 @@ auto makePlate(soften::World& world, soften::Vec2 pos) {
 	//	for (int x = 0; x != SIZEX; ++x) {
 	//		body.p(ids[x][0]).flags(PointFlags::STATIC);
 	//	}
+
+//	body.interactBits(0);
 
 	return body;
 }
@@ -264,10 +264,10 @@ int main() {
 		rect.setOutlineThickness(0.05);
 		rect.setFillColor({0, 0, 0, 0});
 		for (auto body : world) {
-			//			for (int i = 0; i != body.pointsCount(); ++i) {
-			//				circle.setPosition(body.p(PointIdx(i)).position().x, body.p(PointIdx(i)).position().y);
-			//				window.draw(circle);
-			//			}
+			//						for (int i = 0; i != body.pointsCount(); ++i) {
+			//							circle.setPosition(body.p(PointIdx(i)).position().x,
+			//body.p(PointIdx(i)).position().y); 							window.draw(circle);
+			//						}
 
 			for (int i = 0; i != body.constrainCount(); ++i) {
 				auto c = body.c(i);
@@ -278,11 +278,16 @@ int main() {
 				    sf::Vertex(sf::Vector2f(body.p(c.j()).position().x, body.p(c.j()).position().y))};
 				window.draw(line, 2, sf::Lines);
 			}
+			{
+				rect.setPosition(body.aabb().position.x, body.aabb().position.y);
+				rect.setSize({body.aabb().size.x, body.aabb().size.y});
+				window.draw(rect);
+			}
 
-			//			rect.setPosition(body.aabb().position.x, body.aabb().position.y);
-			//			rect.setSize({body.aabb().size.x, body.aabb().size.y});
-			//
-			//			window.draw(rect);
+			{
+				circle.setPosition(body.center().x, body.center().y);
+				window.draw(circle);
+			}
 		}
 
 		sf::sleep(sf::milliseconds(1'000 / 60));

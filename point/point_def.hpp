@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../vector2.hpp"
+#include "../utils/vector2.hpp"
 #include "point_flags.hpp"
 
 namespace soften {

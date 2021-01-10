@@ -6,7 +6,7 @@
 #include "group/group_id.hpp"
 #include "group/group_proxy.hpp"
 #include "point/point.hpp"
-#include "types.hpp"
+#include "utils/types.hpp"
 
 namespace soften {
 
@@ -49,6 +49,7 @@ class World {
 
   private:
 	void updateAABB(Group& group);
+	void updateCenter(Group& group);
 	void updateShells(Group& group);
 	void updatePosition(Group& group, float step);
 	void updateConstrain(Group& group, float step);

@@ -80,6 +80,7 @@ void World::update(float step, int iterations) {
 
 	for (auto& [_, g] : _groups) {
 		updateAABB(g);
+		updateCenter(g);
 	}
 
 	_lastStep = step / iterations;
@@ -128,26 +129,19 @@ inline float fast_sign(float f) {
 }
 
 void World::updateShells(Group& group) {
-	//	 TODO: optimize!!!
-	for (auto& [_, g] : _groups) {
-		if (g.shell.edges.empty()) {
-			continue;
-		}
-		Vec2 center{0, 0};
-		for (const auto& e : g.shell.edges) {
-			center += g.points[e.i].p2;
-		}
-		g.shell.center = center / g.shell.edges.size();
+	if (!group.interactBits) {
+		return;
 	}
 
 	for (auto& [_, other] : _groups) {
-		if (&other == &group || other.shell.edges.empty() || !isIntersecting(other.aabb, group.aabb)) {
+		if (&other == &group || !other.interactBits || other.shell.edges.empty() ||
+		    !isIntersecting(other.aabb, group.aabb)) {
 			continue;
 		}
 
 		for (auto& p : group.points) {
-			if (!(p.flags & PointFlags::INTERACTIVE) || !isIntersecting(other.aabb, p.p2) ||
-			    !isIntersecting(other.shell.edges, other.points, p.p2)) {
+			if (!(other.interactBits & group.interactBits) || !(p.flags & PointFlags::INTERACTIVE) ||
+			    !isIntersecting(other.aabb, p.p2) || !isIntersecting(other.shell.edges, other.points, p.p2)) {
 				continue;
 			}
 
@@ -214,7 +208,8 @@ void World::updateShells(Group& group) {
 			auto& pr = group.points[group.shell.edges[j].i];
 			auto& pl = group.points[group.shell.edges[(j + 1) % group.shell.edges.size()].j];
 
-			if (p.flags & PointFlags::STATIC || !(p.flags & PointFlags::SHELL) || !isIntersecting(other.aabb, p.p2) ||
+			if (!(other.interactBits & group.interactBits) || p.flags & PointFlags::STATIC ||
+			    !(p.flags & PointFlags::SHELL) || !isIntersecting(other.aabb, p.p2) ||
 			    !isIntersecting(other.shell.edges, other.points, p.p2)) {
 				continue;
 			}
@@ -294,6 +289,12 @@ void World::updatePosition(Group& group, float step) {
 		auto p2 = p.p2 + (p.p2 - p.p1) * stepRatio + (_gravity * step * step);
 		p.p1 = p.p2;
 		p.p2 = p2;
+		//		const auto l = p.p2 - p.p1;
+		//		const auto ml = l.length();
+		//		const float maxDp = 10000.0f;
+		//		if (ml / step > maxDp) {
+		//			p.p1 = p.p2 - maxDp*step *(l / ml);
+		//		}
 	}
 }
 
@@ -341,5 +342,19 @@ void World::updateConstrain(Group& group, float step) {
 				pb.p2 -= dT * pa.m / (pa.m + pb.m);
 			}
 		}
+	}
+}
+
+void World::updateCenter(Group& group) {
+	for (auto& [_, g] : _groups) {
+		if (g.points.empty()) {
+			continue;
+		}
+
+		Vec2 center{0, 0};
+		for (const auto& p : g.points) {
+			center += p.p2;
+		}
+		g.center = center / g.points.size();
 	}
 }

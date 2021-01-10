@@ -8,8 +8,8 @@
 #include "../point/point_proxy.hpp"
 #include "../shell/shell.hpp"
 #include "../shell/shell_def.hpp"
-#include "../types.hpp"
-#include "../vector2.hpp"
+#include "../utils/types.hpp"
+#include "../utils/vector2.hpp"
 #include "group.hpp"
 
 namespace soften {
@@ -38,6 +38,11 @@ class GroupProxy {
 	void addShall(const ShellDef& def);
 
 	const Rect2& aabb() const { return _group->aabb; }
+
+	const Vec2& center() const { return _group->center; }
+
+	uint32_t interactBits() { return _group->interactBits; }
+	void interactBits(uint32_t interactBits) { _group->interactBits = interactBits; }
 
   private:
 	explicit GroupProxy(const Group* group): _group(const_cast<Group*>(group)) {}

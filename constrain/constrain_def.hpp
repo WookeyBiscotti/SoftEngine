@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../point/point_id.hpp"
-#include "../types.hpp"
-#include "../vector2.hpp"
+#include "../utils/types.hpp"
+#include "../utils/vector2.hpp"
 #include "constrain_flags.hpp"
 
 namespace soften {
