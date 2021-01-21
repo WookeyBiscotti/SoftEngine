@@ -1,5 +1,7 @@
 #include "world.hpp"
 
+#include "utils/geometry_utils.hpp"
+
 #include <cmath>
 #include <wykobi.hpp>
 
@@ -17,18 +19,6 @@ static bool isIntersecting(const Vec2& p1, const Vec2& p2, const Vec2& q1, const
 	}
 
 	return false;
-}
-
-static bool isIntersecting(const Rect2& aa, const Rect2& bb) {
-	const Vec2 aaMax = aa.position + aa.size;
-	const Vec2 bbMax = bb.position + bb.size;
-
-	return aa.position.x <= bbMax.x && aaMax.x >= bb.position.x && aa.position.y <= bbMax.y && aaMax.y >= bb.position.y;
-}
-
-static bool isIntersecting(const Rect2& aa, const Vec2& p) {
-	const Vec2 aaMax = aa.position + aa.size;
-	return aa.position.x <= p.x && aaMax.x >= p.x && aa.position.y <= p.y && aaMax.y >= p.y;
 }
 
 // TODO: optimise
@@ -141,7 +131,7 @@ void World::updateShells(Group& group) {
 
 		for (auto& p : group.points) {
 			if (!(other.interactBits & group.interactBits) || !(p.flags & PointFlags::INTERACTIVE) ||
-			    !isIntersecting(other.aabb, p.p2) || !isIntersecting(other.shell.edges, other.points, p.p2)) {
+			    !isIntersecting(other.aabb, p.p2) || !::isIntersecting(other.shell.edges, other.points, p.p2)) {
 				continue;
 			}
 
@@ -210,7 +200,7 @@ void World::updateShells(Group& group) {
 
 			if (!(other.interactBits & group.interactBits) || p.flags & PointFlags::STATIC ||
 			    !(p.flags & PointFlags::SHELL) || !isIntersecting(other.aabb, p.p2) ||
-			    !isIntersecting(other.shell.edges, other.points, p.p2)) {
+			    !::isIntersecting(other.shell.edges, other.points, p.p2)) {
 				continue;
 			}
 
@@ -299,7 +289,7 @@ void World::updatePosition(Group& group, float step) {
 }
 
 void World::updateConstrain(Group& group, float step) {
-	for (const auto& c : group.constrains) {
+	for (auto& c : group.constrains) {
 		if (c.is(ConstrainFlags::DISABLE)) {
 			continue;
 		}
@@ -316,6 +306,14 @@ void World::updateConstrain(Group& group, float step) {
 
 		if (c.is(ConstrainFlags::WORKS_IF_LOWER) && invD * c.distance < 1.0f) {
 			continue;
+		}
+
+		if (c.is(ConstrainFlags::BREAK_IF_GREATER) && invD * c.breakDistance < 1.0f) {
+			c.flags |= ConstrainFlags::DISABLE;
+		}
+
+		if (c.is(ConstrainFlags::BREAK_IF_LOWER) && invD * c.breakDistance < 1.0f) {
+			c.flags |= ConstrainFlags::DISABLE;
 		}
 
 		float coeff = 0.5f * (c.distance * invD - 1.0f);

@@ -26,6 +26,9 @@ class ConstrainProxy final {
 	float distance() const;
 	ConstrainProxy& distance(float distance);
 
+	float breakDistance() const;
+	ConstrainProxy& breakDistance(float distance);
+
   private:
 	explicit ConstrainProxy(const Constrain* constrain): _constrain(const_cast<Constrain*>(constrain)) {}
 	ConstrainProxy() = delete;
@@ -60,6 +63,15 @@ inline float ConstrainProxy::distance() const {
 inline ConstrainProxy& ConstrainProxy::distance(float distance) {
 	_constrain->distance = distance;
 	return *this;
+}
+
+inline float ConstrainProxy::breakDistance() const {
+	return _constrain->breakDistance;
+}
+
+inline ConstrainProxy& ConstrainProxy::breakDistance(float distance) {
+	_constrain->breakDistance = distance;
+    return *this;
 }
 
 } // namespace soften

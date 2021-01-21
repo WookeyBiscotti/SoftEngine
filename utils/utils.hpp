@@ -2,6 +2,7 @@
 
 #include <cinttypes>
 
+namespace soften {
 inline float fastInvSqrt(float number) {
 	const float x2 = number * 0.5f;
 	const float threehalfs = 1.5f;
@@ -14,3 +15,5 @@ inline float fastInvSqrt(float number) {
 	conv.f *= threehalfs - x2 * conv.f * conv.f;
 	return conv.f;
 }
+
+} // namespace soften

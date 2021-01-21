@@ -37,17 +37,22 @@ class World {
 	GroupIterator end() { return GroupIterator(_groups.end()); }
 
 	void gravity(const Vec2& gravity) { _gravity = gravity; }
-
 	const Vec2& gravity() const { return _gravity; }
 
 	void update(float step, int iterations = 10);
 
-	void addBorder(const Vec2& a, const Vec2& b) { _borders.emplace_back(a, b); }
-
 	GroupId create(const GroupDef& def);
 	GroupProxy get(GroupId id);
 
-  private:
+//	template<class Fn>
+//	void queryShell(const Rect2& rect) {
+//		//TODO: Optimize
+//		for(const auto& g: _groups) {
+//			if(isIntersecting(rect, g.))
+//		}
+//	}
+
+	private:
 	void updateAABB(Group& group);
 	void updateCenter(Group& group);
 	void updateShells(Group& group);
@@ -57,8 +62,6 @@ class World {
   private:
 	float _lastStep = std::numeric_limits<float>::signaling_NaN();
 	Vec2 _gravity{0, 0};
-
-	std::vector<std::pair<Vec2, Vec2>> _borders;
 
 	Id _currentGroupId = 0;
 	HashMap<Id, Group> _groups;

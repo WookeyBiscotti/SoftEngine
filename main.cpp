@@ -126,20 +126,26 @@ auto makePlate(soften::World& world, soften::Vec2 pos) {
 		for (int y = 0; y != SIZEY; ++y) {
 			if (x != SIZEX - 1) {
 				//				body.createConstrain(ids[x][y], ids[x + 1][y]);
-				body.createConstrain(ids[x][y], ids[x + 1][y], ConstrainFlags::WORKS_IF_GREATER);
+				auto id = body.createConstrain(
+				    ids[x][y], ids[x + 1][y], ConstrainFlags::WORKS_IF_GREATER | ConstrainFlags::BREAK_IF_GREATER);
+				auto c = body.c(id);
+				c.breakDistance(c.distance() * 2);
 			}
 			if (y != SIZEY - 1) {
 				//				body.createConstrain(ids[x][y], ids[x][y + 1]);
-				body.createConstrain(ids[x][y], ids[x][y + 1], ConstrainFlags::WORKS_IF_GREATER);
+				auto id = body.createConstrain(
+				    ids[x][y], ids[x][y + 1], ConstrainFlags::WORKS_IF_GREATER | ConstrainFlags::BREAK_IF_GREATER);
+				auto c = body.c(id);
+				c.breakDistance(c.distance() * 2);
 			}
 		}
 	}
 
-	//	for (int x = 0; x != SIZEX; ++x) {
-	//		body.p(ids[x][0]).flags(PointFlags::STATIC);
-	//	}
+		for (int x = 0; x != SIZEX; ++x) {
+			body.p(ids[x][0]).flags(PointFlags::STATIC);
+		}
 
-//	body.interactBits(0);
+	//	body.interactBits(0);
 
 	return body;
 }
@@ -169,7 +175,7 @@ int main() {
 	//	}
 
 	//	body = makePlate(world, {1, 1});
-	auto body = makePlate(world, {1, 4});
+	auto body = makePlate(world, {1, 5});
 	//	auto body = makeCube(world, {1, 4});
 
 	//	{
@@ -266,7 +272,7 @@ int main() {
 		for (auto body : world) {
 			//						for (int i = 0; i != body.pointsCount(); ++i) {
 			//							circle.setPosition(body.p(PointIdx(i)).position().x,
-			//body.p(PointIdx(i)).position().y); 							window.draw(circle);
+			// body.p(PointIdx(i)).position().y); 							window.draw(circle);
 			//						}
 
 			for (int i = 0; i != body.constrainCount(); ++i) {
