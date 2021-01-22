@@ -28,10 +28,10 @@ class World {
 		bool operator!=(const GroupIterator& other) { return _it != other._it; }
 
 	  private:
-		explicit GroupIterator(Index<Group>& groups, Index<Group>::Iterator it): _it(it), _groups(groups) {}
+		explicit GroupIterator(AABB2DTree<Group>& groups, AABB2DTree<Group>::Iterator it): _it(it), _groups(groups) {}
 
-		Index<Group>::Iterator _it;
-		Index<Group>& _groups;
+        AABB2DTree<Group>::Iterator _it;
+        AABB2DTree<Group>& _groups;
 	};
 
 	auto begin() { return GroupIterator(_groups, _groups.begin()); }
@@ -64,7 +64,8 @@ class World {
 	float _lastStep = std::numeric_limits<float>::signaling_NaN();
 	Vec2 _gravity{0, 0};
 
-	Index<Group> _groups;
+//	Index<Group> _groups;
+    AABB2DTree<Group> _groups;
 };
 
 } // namespace soften

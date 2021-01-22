@@ -5,8 +5,8 @@
 namespace soften {
 
 struct Rect2 {
-	Vec2 position;
-	Vec2 size;
+	Vec2 lb;
+	Vec2 ub;
 };
 
 } // namespace soften

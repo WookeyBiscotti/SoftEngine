@@ -7,6 +7,29 @@
 
 using namespace soften;
 
+namespace biss {
+
+template<>
+float get<Vec2, float>(uint i, const Vec2& v) {
+	if (i == 0) {
+		return v.x;
+	} else {
+		return v.y;
+	}
+}
+
+template<>
+float get_lb<Rect2, float>(uint i, const Rect2& aabb) {
+	return get<Vec2, float>(i, aabb.lb);
+}
+
+template<>
+float get_ub<Rect2, float>(uint i, const Rect2& aabb) {
+	return get<Vec2, float>(i, aabb.ub);
+}
+
+} // namespace biss
+
 // TODO: optimise
 static bool isIntersecting(const Vec2& p1, const Vec2& p2, const Vec2& q1, const Vec2& q2, Vec2& inter) {
 	wykobi::point2d<float> p;
@@ -46,7 +69,7 @@ static bool isIntersecting(const decltype(Shell::edges)& edges, const DynArray<P
 }
 
 GroupId World::create(const GroupDef& def) {
-    const auto id = _groups.create();
+	const auto id = _groups.emplace({}, Group{});
 	_groups[id].id.id = id;
 
 	return GroupId{id};
@@ -73,6 +96,8 @@ void World::update(float step, int iterations) {
 	for (auto& g : _groups) {
 		updateAABB(g);
 		updateCenter(g);
+
+        _groups.update(g.id.id, g.aabb, Vec2{});
 	}
 
 	_lastStep = step / iterations;
@@ -84,31 +109,31 @@ void World::updateAABB(Group& g) {
 		return;
 	}
 
-	Vec2 aa{std::numeric_limits<float>::max(), std::numeric_limits<float>::max()},
-	    bb{-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max()};
+	Vec2 lb{std::numeric_limits<float>::max(), std::numeric_limits<float>::max()},
+	    ub{-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max()};
 	bool initAABB = false;
 	for (auto& p : g.points) {
 		if (p.flags & PointFlags::DISABLE) {
 			continue;
 		}
 		initAABB = true;
-		if (p.p2.x < aa.x) {
-			aa.x = p.p2.x;
+		if (p.p2.x < lb.x) {
+			lb.x = p.p2.x;
 		}
-		if (p.p2.y < aa.y) {
-			aa.y = p.p2.y;
+		if (p.p2.y < lb.y) {
+			lb.y = p.p2.y;
 		}
-		if (p.p2.x > bb.x) {
-			bb.x = p.p2.x;
+		if (p.p2.x > ub.x) {
+			ub.x = p.p2.x;
 		}
-		if (p.p2.y > bb.y) {
-			bb.y = p.p2.y;
+		if (p.p2.y > ub.y) {
+			ub.y = p.p2.y;
 		}
 	}
 
 	if (initAABB) {
-		g.aabb.position = aa;
-		g.aabb.size = bb - aa;
+		g.aabb.lb = lb;
+		g.aabb.ub = ub;
 	} else {
 		g.aabb = {};
 	}

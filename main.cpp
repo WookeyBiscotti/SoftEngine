@@ -72,13 +72,13 @@ auto makeCube(soften::World& world, soften::Vec2 pos) {
 	return body;
 }
 
-auto makeRect(soften::World& world, soften::Rect2 rect, FlagsStorage flags) {
+auto makeRect(soften::World& world, const soften::Rect2& rect, FlagsStorage flags) {
 	auto bodyId = world.create(soften::GroupDef());
 	auto body = world.get(bodyId);
-	body.createPoint(Vec2{rect.position.x, rect.position.y}, flags);
-	body.createPoint(Vec2{rect.position.x + rect.size.x, rect.position.y}, flags);
-	body.createPoint(Vec2{rect.position.x + rect.size.x, rect.position.y + rect.size.y}, flags);
-	body.createPoint(Vec2{rect.position.x, rect.position.y + rect.size.y}, flags);
+	body.createPoint(Vec2{rect.lb.x, rect.lb.y}, flags);
+	body.createPoint(Vec2{rect.ub.x, rect.lb.y}, flags);
+	body.createPoint(Vec2{rect.ub.x, rect.ub.y}, flags);
+	body.createPoint(Vec2{rect.lb.x, rect.ub.y}, flags);
 
 	body.createConstrain(0, 1);
 	body.createConstrain(1, 2);
@@ -99,11 +99,11 @@ auto makeRect(soften::World& world, soften::Rect2 rect, FlagsStorage flags) {
 }
 
 void makeBorders(soften::World& world) {
-	makeRect(world, Rect2{Vec2(-2, -1), Vec2(24, 2)}, PointFlags::STATIC);
-	makeRect(world, Rect2{Vec2(-2, 10), Vec2(24, 2)}, PointFlags::STATIC);
+	makeRect(world, Rect2{Vec2(-2, -1), Vec2(22, 1)}, PointFlags::STATIC);
+	makeRect(world, Rect2{Vec2(-2, 10), Vec2(22, 12)}, PointFlags::STATIC);
 
-	makeRect(world, Rect2{Vec2(-2, -2), Vec2(2, 14)}, PointFlags::STATIC);
-	makeRect(world, Rect2{Vec2(20, -2), Vec2(2, 14)}, PointFlags::STATIC);
+	makeRect(world, Rect2{Vec2(-2, -2), Vec2(0, 12)}, PointFlags::STATIC);
+	makeRect(world, Rect2{Vec2(20, -2), Vec2(22, 12)}, PointFlags::STATIC);
 }
 
 auto makePlate(soften::World& world, soften::Vec2 pos) {
@@ -176,8 +176,8 @@ int main() {
 	//	}
 
 	//	body = makePlate(world, {1, 1});
-//	auto body = makePlate(world, {1, 5});
-		auto body = makeCube(world, {1, 4});
+	//	auto body = makePlate(world, {1, 5});
+	auto body = makeCube(world, {1, 4});
 
 	//	{
 	//		auto bodyId1 = world.create(soften::GroupDef());
@@ -289,8 +289,11 @@ int main() {
 				window.draw(line, 2, sf::Lines);
 			}
 			{
-				rect.setPosition(body.aabb().position.x, body.aabb().position.y);
-				rect.setSize({body.aabb().size.x, body.aabb().size.y});
+
+				auto rect2 = body.aabb();
+				rect.setPosition(body.aabb().lb.x, body.aabb().lb.y);
+				auto size = body.aabb().ub- body.aabb().lb;
+				rect.setSize({size.x, size.y});
 				window.draw(rect);
 			}
 

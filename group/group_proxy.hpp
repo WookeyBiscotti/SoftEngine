@@ -45,11 +45,11 @@ class GroupProxy {
 	void interactBits(uint32_t interactBits) { _groups[_idx].interactBits = interactBits; }
 
   private:
-	GroupProxy(Index<Group>& groups, uint idx): _groups(const_cast<Index<Group>&>(groups)), _idx(idx) {}
+	GroupProxy(AABB2DTree<Group>& groups, uint idx): _groups(const_cast<AABB2DTree<Group>&>(groups)), _idx(idx) {}
 
   private:
-	Index<Group>& _groups;
-	Index<Group>::index_t _idx;
+    AABB2DTree<Group>& _groups;
+    biss::index_t _idx;
 };
 
 inline PointIdx GroupProxy::createPoint(const PointDef& p) {
