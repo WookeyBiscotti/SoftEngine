@@ -19,8 +19,8 @@ class GroupProxy {
 	friend class GroupIterator;
 
   public:
-	Idx pointsCount() const { return _group->points.size(); }
-	Idx constrainCount() const { return _group->constrains.size(); }
+	Idx pointsCount() const { return _groups[_idx].points.size(); }
+	Idx constrainCount() const { return _groups[_idx].constrains.size(); }
 
 	const PointProxy p(PointIdx id) const;
 	PointProxy p(PointIdx id);
@@ -37,70 +37,71 @@ class GroupProxy {
 
 	void addShall(const ShellDef& def);
 
-	const Rect2& aabb() const { return _group->aabb; }
+	const Rect2& aabb() const { return _groups[_idx].aabb; }
 
-	const Vec2& center() const { return _group->center; }
+	const Vec2& center() const { return _groups[_idx].center; }
 
-	uint32_t interactBits() { return _group->interactBits; }
-	void interactBits(uint32_t interactBits) { _group->interactBits = interactBits; }
-
-  private:
-	explicit GroupProxy(const Group* group): _group(const_cast<Group*>(group)) {}
+	uint32_t interactBits() { return _groups[_idx].interactBits; }
+	void interactBits(uint32_t interactBits) { _groups[_idx].interactBits = interactBits; }
 
   private:
-	Group* _group;
+	GroupProxy(Index<Group>& groups, uint idx): _groups(const_cast<Index<Group>&>(groups)), _idx(idx) {}
+
+  private:
+	Index<Group>& _groups;
+	Index<Group>::index_t _idx;
 };
 
 inline PointIdx GroupProxy::createPoint(const PointDef& p) {
-	_group->points.emplace_back(p.p1, p.p2, p.flags);
+	_groups[_idx].points.emplace_back(p.p1, p.p2, p.flags);
 
-	return PointIdx(_group->points.size() - 1);
+	return PointIdx(_groups[_idx].points.size() - 1);
 }
 
 inline PointIdx GroupProxy::createPoint(const Vec2& v, FlagsStorage flags, float m) {
-	_group->points.emplace_back(v, v, flags, m);
+	_groups[_idx].points.emplace_back(v, v, flags, m);
 
-	return PointIdx(_group->points.size() - 1);
+	return PointIdx(_groups[_idx].points.size() - 1);
 }
 
 inline ConstrainIdx GroupProxy::createConstrain(const ConstrainDef& c) {
 	float d = c.distance;
 	if (isnanf(d)) {
-		d = _group->points[c.i.idx].p2.distance(_group->points[c.j.idx].p2);
+		d = _groups[_idx].points[c.i.idx].p2.distance(_groups[_idx].points[c.j.idx].p2);
 	}
-	_group->constrains.emplace_back(c.i.idx, c.j.idx, d, c.flags);
+	_groups[_idx].constrains.emplace_back(c.i.idx, c.j.idx, d, c.flags);
 
-	return ConstrainIdx(_group->constrains.size() - 1);
+	return ConstrainIdx(_groups[_idx].constrains.size() - 1);
 }
 
 inline ConstrainIdx GroupProxy::createConstrain(PointIdx i, PointIdx j, FlagsStorage flags) {
-	float d = _group->points[i.idx].p2.distance(_group->points[j.idx].p2);
+	float d = _groups[_idx].points[i.idx].p2.distance(_groups[_idx].points[j.idx].p2);
 
-	_group->constrains.emplace_back(i.idx, j.idx, d, flags);
+	_groups[_idx].constrains.emplace_back(i.idx, j.idx, d, flags);
 
-	return ConstrainIdx(_group->constrains.size() - 1);
+	return ConstrainIdx(_groups[_idx].constrains.size() - 1);
 }
 
 inline const PointProxy GroupProxy::p(PointIdx id) const {
-	return PointProxy(&_group->points[id.idx]);
+	return PointProxy(&_groups[_idx].points[id.idx]);
 }
 
 inline PointProxy GroupProxy::p(PointIdx id) {
-	return PointProxy(&_group->points[id.idx]);
+	return PointProxy(&_groups[_idx].points[id.idx]);
 }
 
 inline const ConstrainProxy GroupProxy::c(ConstrainIdx id) const {
-	return ConstrainProxy(&_group->constrains[id.id]);
+	return ConstrainProxy(&_groups[_idx].constrains[id.id]);
 }
 
 inline ConstrainProxy GroupProxy::c(ConstrainIdx id) {
-	return ConstrainProxy(&_group->constrains[id.id]);
+	return ConstrainProxy(&_groups[_idx].constrains[id.id]);
 }
 
 inline void GroupProxy::fitConstrain(ConstrainIdx id) {
-	auto& c = _group->constrains[id.id];
+	auto& c = _groups[_idx].constrains[id.id];
 
-	c.distance = _group->points[c.i].p2.distance(_group->points[c.j].p2);
+	c.distance = _groups[_idx].points[c.i].p2.distance(_groups[_idx].points[c.j].p2);
 }
 
 } // namespace soften

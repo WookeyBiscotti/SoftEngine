@@ -46,12 +46,14 @@ static bool isIntersecting(const decltype(Shell::edges)& edges, const DynArray<P
 }
 
 GroupId World::create(const GroupDef& def) {
-	_groups[_currentGroupId].id.id = _currentGroupId;
-	return GroupId{_currentGroupId++};
+    const auto id = _groups.create();
+	_groups[id].id.id = id;
+
+	return GroupId{id};
 }
 
 GroupProxy World::get(GroupId id) {
-	return GroupProxy(&_groups[id.id]);
+	return GroupProxy(_groups, id.id);
 }
 
 void World::update(float step, int iterations) {
@@ -60,7 +62,7 @@ void World::update(float step, int iterations) {
 	}
 
 	for (int rr = 0; rr < iterations; ++rr) {
-		for (auto& [_, g] : _groups) {
+		for (auto& g : _groups) {
 			updatePosition(g, step / iterations);
 			updateConstrain(g, step / iterations);
 			updateAABB(g);
@@ -68,7 +70,7 @@ void World::update(float step, int iterations) {
 		}
 	}
 
-	for (auto& [_, g] : _groups) {
+	for (auto& g : _groups) {
 		updateAABB(g);
 		updateCenter(g);
 	}
@@ -123,7 +125,7 @@ void World::updateShells(Group& group) {
 		return;
 	}
 
-	for (auto& [_, other] : _groups) {
+	for (auto& other : _groups) {
 		if (&other == &group || !other.interactBits || other.shell.edges.empty() ||
 		    !isIntersecting(other.aabb, group.aabb)) {
 			continue;
@@ -344,7 +346,7 @@ void World::updateConstrain(Group& group, float step) {
 }
 
 void World::updateCenter(Group& group) {
-	for (auto& [_, g] : _groups) {
+	for (auto& g : _groups) {
 		if (g.points.empty()) {
 			continue;
 		}

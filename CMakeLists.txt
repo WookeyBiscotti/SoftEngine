@@ -10,5 +10,7 @@ add_executable(${CMAKE_PROJECT_NAME} main.cpp world.cpp group/group_proxy.cpp)
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC 3rdparty/wykobi)
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC 3rdparty/RTree)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} Threads::Threads -lsfml-graphics -lsfml-window -lsfml-system GL)
+add_subdirectory(3rdparty/AABBTree)
+
+target_link_libraries(${CMAKE_PROJECT_NAME} Threads::Threads indexer -lsfml-graphics -lsfml-window -lsfml-system GL)
 

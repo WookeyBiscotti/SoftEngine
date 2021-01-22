@@ -21,20 +21,21 @@ class World {
 			return *this;
 		}
 
-		auto operator->() { return GroupProxy(&_it->second); }
-		auto operator*() { return GroupProxy(&_it->second); }
+		auto operator->() { return GroupProxy(_groups, _it.idx()); }
+		auto operator*() { return GroupProxy(_groups, _it.idx()); }
 
 		bool operator==(const GroupIterator& other) { return _it == other._it; }
 		bool operator!=(const GroupIterator& other) { return _it != other._it; }
 
 	  private:
-		explicit GroupIterator(HashMap<Id, Group>::iterator it): _it(it) {}
+		explicit GroupIterator(Index<Group>& groups, Index<Group>::Iterator it): _it(it), _groups(groups) {}
 
-		HashMap<Id, Group>::iterator _it;
+		Index<Group>::Iterator _it;
+		Index<Group>& _groups;
 	};
 
-	GroupIterator begin() { return GroupIterator(_groups.begin()); }
-	GroupIterator end() { return GroupIterator(_groups.end()); }
+	auto begin() { return GroupIterator(_groups, _groups.begin()); }
+	auto end() { return GroupIterator(_groups, _groups.end()); }
 
 	void gravity(const Vec2& gravity) { _gravity = gravity; }
 	const Vec2& gravity() const { return _gravity; }
@@ -44,15 +45,15 @@ class World {
 	GroupId create(const GroupDef& def);
 	GroupProxy get(GroupId id);
 
-//	template<class Fn>
-//	void queryShell(const Rect2& rect) {
-//		//TODO: Optimize
-//		for(const auto& g: _groups) {
-//			if(isIntersecting(rect, g.))
-//		}
-//	}
+	//	template<class Fn>
+	//	void queryShell(const Rect2& rect) {
+	//		//TODO: Optimize
+	//		for(const auto& g: _groups) {
+	//			if(isIntersecting(rect, g.))
+	//		}
+	//	}
 
-	private:
+  private:
 	void updateAABB(Group& group);
 	void updateCenter(Group& group);
 	void updateShells(Group& group);
@@ -63,8 +64,7 @@ class World {
 	float _lastStep = std::numeric_limits<float>::signaling_NaN();
 	Vec2 _gravity{0, 0};
 
-	Id _currentGroupId = 0;
-	HashMap<Id, Group> _groups;
+	Index<Group> _groups;
 };
 
 } // namespace soften

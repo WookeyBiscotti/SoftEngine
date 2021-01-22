@@ -1,0 +1,3 @@
+[submodule "3rdparty/AABBTree"]
+	path = 3rdparty/AABBTree
+	url = https://github.com/WookeyBiscotti/AABBTree.git

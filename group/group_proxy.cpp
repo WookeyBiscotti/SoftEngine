@@ -3,12 +3,14 @@
 using namespace soften;
 
 void GroupProxy::addShall(const ShellDef& def) {
-	_group->shell.edges.resize(def.edges.size());
-	for (ulong i = 0; i != _group->shell.edges.size(); ++i) {
-		_group->shell.edges[i].i = def.edges[i].i;
-		_group->shell.edges[i].j = def.edges[i].j;
-		_group->shell.edges[i].friction = def.edges[i].friction;
+    auto& group = _groups[_idx];
 
-		_group->points[_group->shell.edges[i].j].flags |= PointFlags::SHELL;
+    group.shell.edges.resize(def.edges.size());
+	for (ulong i = 0; i != group.shell.edges.size(); ++i) {
+        group.shell.edges[i].i = def.edges[i].i;
+        group.shell.edges[i].j = def.edges[i].j;
+        group.shell.edges[i].friction = def.edges[i].friction;
+
+        group.points[group.shell.edges[i].j].flags |= PointFlags::SHELL;
 	}
 }

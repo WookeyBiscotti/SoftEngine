@@ -12,10 +12,12 @@ auto makeCube(soften::World& world, soften::Vec2 pos) {
 
 	auto eps = [] { return 0.0f; };
 
-	body.createPoint(pos + Vec2{0.5f + eps(), 0.5f + eps()});
-	body.createPoint(pos + Vec2{-0.5f + eps(), 0.5f + eps()});
-	body.createPoint(pos + Vec2{-0.5f + eps(), -0.5f + eps()});
-	body.createPoint(pos + Vec2{0.5f + eps(), -0.5f + eps()});
+	const float size = 0.2f;
+
+	body.createPoint(pos + Vec2{size + eps(), size + eps()});
+	body.createPoint(pos + Vec2{-size + eps(), size + eps()});
+	body.createPoint(pos + Vec2{-size + eps(), -size + eps()});
+	body.createPoint(pos + Vec2{size + eps(), -size + eps()});
 
 	float Coeff = 0.1f * (1.0 / 60.0f) * (1.0 / 60.0f);
 	Coeff = 1 / Coeff;
@@ -141,9 +143,9 @@ auto makePlate(soften::World& world, soften::Vec2 pos) {
 		}
 	}
 
-		for (int x = 0; x != SIZEX; ++x) {
-			body.p(ids[x][0]).flags(PointFlags::STATIC);
-		}
+	for (int x = 0; x != SIZEX; ++x) {
+		body.p(ids[x][0]).flags(PointFlags::STATIC);
+	}
 
 	//	body.interactBits(0);
 
@@ -151,7 +153,6 @@ auto makePlate(soften::World& world, soften::Vec2 pos) {
 }
 
 int main() {
-
 	sf::RenderWindow window(sf::VideoMode(800, 400), "Time Alchemy");
 	auto view = window.getView();
 	view.setSize(20, -10);
@@ -175,8 +176,8 @@ int main() {
 	//	}
 
 	//	body = makePlate(world, {1, 1});
-	auto body = makePlate(world, {1, 5});
-	//	auto body = makeCube(world, {1, 4});
+//	auto body = makePlate(world, {1, 5});
+		auto body = makeCube(world, {1, 4});
 
 	//	{
 	//		auto bodyId1 = world.create(soften::GroupDef());
@@ -211,7 +212,9 @@ int main() {
 	makeBorders(world);
 
 	bool running = true;
+	auto clock = sf::Clock();
 	while (running) {
+		auto t1 = clock.getElapsedTime();
 		sf::Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::EventType::Closed) {
@@ -252,7 +255,9 @@ int main() {
 			} else if (event.type == sf::Event::EventType::KeyReleased) {
 				auto rawPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 				soften::Vec2 mouse = {rawPos.x, rawPos.y};
+				static int i = 0;
 				makeCube(world, mouse);
+				std::cout << ++i << std::endl;
 			}
 		}
 
@@ -274,7 +279,6 @@ int main() {
 			//							circle.setPosition(body.p(PointIdx(i)).position().x,
 			// body.p(PointIdx(i)).position().y); 							window.draw(circle);
 			//						}
-
 			for (int i = 0; i != body.constrainCount(); ++i) {
 				auto c = body.c(i);
 				if (c.flags() & ConstrainFlags::DISABLE) {
@@ -296,8 +300,22 @@ int main() {
 			}
 		}
 
-		sf::sleep(sf::milliseconds(1'000 / 60));
+		auto t2 = clock.restart();
 
+		const auto dt = (t2 - t1).asMicroseconds();
+
+		const auto umPerFrame = 1'000'000 / 60.0f;
+
+		if (dt < umPerFrame) {
+			sf::sleep(sf::microseconds(umPerFrame - dt));
+		}
+
+		sf::Text text;
+		text.setScale(0.01f, 0.01f);
+		text.setString(std::to_string(1'000'000.0f / dt));
+		text.setPosition(window.getView().getCenter() - 0.5f * window.getView().getSize());
+
+		window.draw(text);
 		window.display();
 	}
 	return 0;
