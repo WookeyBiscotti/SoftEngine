@@ -12,7 +12,7 @@ auto makeCube(soften::World& world, soften::Vec2 pos) {
 
 	auto eps = [] { return 0.0f; };
 
-	const float size = 0.2f;
+	const float size = 0.1f;
 
 	body.createPoint(pos + Vec2{size + eps(), size + eps()});
 	body.createPoint(pos + Vec2{-size + eps(), size + eps()});
@@ -62,10 +62,10 @@ auto makeCube(soften::World& world, soften::Vec2 pos) {
 	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
 
 	ShellDef shell;
-	shell.edges.push_back({0, 1});
-	shell.edges.push_back({1, 2});
-	shell.edges.push_back({2, 3});
-	shell.edges.push_back({3, 0});
+	shell.edges.push_back({0, 1, 0.3f});
+	shell.edges.push_back({1, 2, 0.3f});
+	shell.edges.push_back({2, 3, 0.3f});
+	shell.edges.push_back({3, 0, 0.3f});
 
 	body.addShall(shell);
 
@@ -209,6 +209,16 @@ int main() {
 	//	world.addBorder({20, 10}, {0, 10});
 	//	world.addBorder({0, 10}, {0, 0});
 
+	sf::CircleShape circle;
+	circle.setFillColor(sf::Color::White);
+	circle.setRadius(0.05);
+	circle.setOrigin(0.1, 0.1);
+
+	sf::RectangleShape rect;
+	rect.setOutlineColor(sf::Color::Green);
+	rect.setOutlineThickness(0.05);
+	rect.setFillColor({0, 0, 0, 0});
+
 	makeBorders(world);
 
 	bool running = true;
@@ -252,28 +262,28 @@ int main() {
 					soften::Vec2 mouse = {rawPos.x, rawPos.y};
 					body.p(mouseId).position(mouse);
 				}
-			} else if (event.type == sf::Event::EventType::KeyReleased) {
-				auto rawPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-				soften::Vec2 mouse = {rawPos.x, rawPos.y};
-				static int i = 0;
-				makeCube(world, mouse);
-				std::cout << ++i << std::endl;
 			}
+			//			else if (event.type == sf::Event::EventType::KeyReleased) {
+			//				auto rawPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+			//				soften::Vec2 mouse = {rawPos.x, rawPos.y};
+			//				static int i = 0;
+			//				makeCube(world, mouse);
+			//				std::cout << ++i << std::endl;
+			//			}
 		}
 
-		world.update(1.0 / 60, 10);
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)) {
+			auto rawPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+			soften::Vec2 mouse = {rawPos.x, rawPos.y};
+			static int i = 0;
+			makeCube(world, mouse);
+			std::cout << ++i << std::endl;
+		}
+
+		world.update(1.0 / 60, 20);
 
 		window.clear();
 
-		sf::CircleShape circle;
-		circle.setFillColor(sf::Color::White);
-		circle.setRadius(0.1);
-		circle.setOrigin(0.1, 0.1);
-
-		sf::RectangleShape rect;
-		rect.setOutlineColor(sf::Color::Green);
-		rect.setOutlineThickness(0.05);
-		rect.setFillColor({0, 0, 0, 0});
 		for (auto body : world) {
 			//						for (int i = 0; i != body.pointsCount(); ++i) {
 			//							circle.setPosition(body.p(PointIdx(i)).position().x,
@@ -288,19 +298,19 @@ int main() {
 				    sf::Vertex(sf::Vector2f(body.p(c.j()).position().x, body.p(c.j()).position().y))};
 				window.draw(line, 2, sf::Lines);
 			}
-			{
-
-				auto rect2 = body.aabb();
-				rect.setPosition(body.aabb().lb.x, body.aabb().lb.y);
-				auto size = body.aabb().ub- body.aabb().lb;
-				rect.setSize({size.x, size.y});
-				window.draw(rect);
-			}
-
-			{
-				circle.setPosition(body.center().x, body.center().y);
-				window.draw(circle);
-			}
+			//			{
+			//
+			//				auto rect2 = body.aabb();
+			//				rect.setPosition(body.aabb().lb.x, body.aabb().lb.y);
+			//				auto size = body.aabb().ub- body.aabb().lb;
+			//				rect.setSize({size.x, size.y});
+			//				window.draw(rect);
+			//			}
+			//
+			//			{
+			//				circle.setPosition(body.center().x, body.center().y);
+			//				window.draw(circle);
+			//			}
 		}
 
 		auto t2 = clock.restart();
@@ -313,12 +323,12 @@ int main() {
 			sf::sleep(sf::microseconds(umPerFrame - dt));
 		}
 
-		sf::Text text;
-		text.setScale(0.01f, 0.01f);
-		text.setString(std::to_string(1'000'000.0f / dt));
-		text.setPosition(window.getView().getCenter() - 0.5f * window.getView().getSize());
-
-		window.draw(text);
+		//		sf::Text text;
+		//		text.setScale(0.01f, 0.01f);
+		//		text.setString(std::to_string(1'000'000.0f / dt));
+		//		text.setPosition(window.getView().getCenter() - 0.5f * window.getView().getSize());
+		//
+		//		window.draw(text);
 		window.display();
 	}
 	return 0;

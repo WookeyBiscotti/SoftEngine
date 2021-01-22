@@ -34,6 +34,8 @@ class World {
         AABB2DTree<Group>& _groups;
 	};
 
+	World();
+
 	auto begin() { return GroupIterator(_groups, _groups.begin()); }
 	auto end() { return GroupIterator(_groups, _groups.end()); }
 
@@ -64,7 +66,6 @@ class World {
 	float _lastStep = std::numeric_limits<float>::signaling_NaN();
 	Vec2 _gravity{0, 0};
 
-//	Index<Group> _groups;
     AABB2DTree<Group> _groups;
 };
 

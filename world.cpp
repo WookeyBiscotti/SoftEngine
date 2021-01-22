@@ -95,9 +95,10 @@ void World::update(float step, int iterations) {
 
 	for (auto& g : _groups) {
 		updateAABB(g);
+		const auto oldCenter = g.center;
 		updateCenter(g);
 
-        _groups.update(g.id.id, g.aabb, Vec2{});
+		_groups.update(g.id.id, g.aabb, g.center - oldCenter);
 	}
 
 	_lastStep = step / iterations;
@@ -150,10 +151,10 @@ void World::updateShells(Group& group) {
 		return;
 	}
 
-	for (auto& other : _groups) {
-		if (&other == &group || !other.interactBits || other.shell.edges.empty() ||
-		    !isIntersecting(other.aabb, group.aabb)) {
-			continue;
+	_groups.query(group.aabb, [this, &group](biss::index_t nodeIdx) {
+		auto& other = _groups[nodeIdx];
+		if (&other == &group || !other.interactBits || other.shell.edges.empty()) {
+			return true;
 		}
 
 		for (auto& p : group.points) {
@@ -293,7 +294,8 @@ void World::updateShells(Group& group) {
 				p.p1 += (((p.p2 - p.p1) * l) * e.friction) * l;
 			}
 		}
-	}
+		return true;
+	});
 }
 
 void World::updatePosition(Group& group, float step) {
@@ -306,12 +308,12 @@ void World::updatePosition(Group& group, float step) {
 		auto p2 = p.p2 + (p.p2 - p.p1) * stepRatio + (_gravity * step * step);
 		p.p1 = p.p2;
 		p.p2 = p2;
-		//		const auto l = p.p2 - p.p1;
-		//		const auto ml = l.length();
-		//		const float maxDp = 10000.0f;
-		//		if (ml / step > maxDp) {
-		//			p.p1 = p.p2 - maxDp*step *(l / ml);
-		//		}
+//				const auto l = p.p2 - p.p1;
+//				const auto ml = l.length();
+//				const float maxDp = 10000.0f;
+//				if (ml / step > maxDp) {
+//					p.p1 = p.p2 - maxDp*step *(l / ml);
+//				}
 	}
 }
 
@@ -382,4 +384,7 @@ void World::updateCenter(Group& group) {
 		}
 		g.center = center / g.points.size();
 	}
+}
+
+World::World(): _groups(0.1f, 2) {
 }
