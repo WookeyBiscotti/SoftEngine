@@ -12,54 +12,54 @@ auto makeCube(soften::World& world, soften::Vec2 pos) {
 
 	auto eps = [] { return 0.0f; };
 
-	const float size = 0.1f;
+	const float size = 0.25;
 
 	body.createPoint(pos + Vec2{size + eps(), size + eps()});
 	body.createPoint(pos + Vec2{-size + eps(), size + eps()});
 	body.createPoint(pos + Vec2{-size + eps(), -size + eps()});
 	body.createPoint(pos + Vec2{size + eps(), -size + eps()});
 
-	float Coeff = 0.1f * (1.0 / 60.0f) * (1.0 / 60.0f);
+	float Coeff = 1.0f * (1.0 / 60.0f) * (1.0 / 60.0f);
 	Coeff = 1 / Coeff;
 
 	auto id = body.createConstrain(0, 1);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
 	id = body.createConstrain(1, 2);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
 	id = body.createConstrain(2, 3);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
 	id = body.createConstrain(3, 0);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(0.5f);
 	id = body.createConstrain(0, 2);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(1.0f);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(1.0f);
 	id = body.createConstrain(1, 3);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(1.0f);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_LOWER).distance(1.0f);
 
-	//	body.createConstrain(0, 1);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
-	//	id = body.createConstrain(1, 2);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
-	//	id = body.createConstrain(2, 3);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
-	//	id = body.createConstrain(3, 0);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
-	//	id = body.createConstrain(0, 2);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(2.0f);
-	//	id = body.createConstrain(1, 3);
-	//	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(2.0f);
+	body.createConstrain(0, 1);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+	id = body.createConstrain(1, 2);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+	id = body.createConstrain(2, 3);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+	id = body.createConstrain(3, 0);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(1.5f);
+	id = body.createConstrain(0, 2);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(2.0f);
+	id = body.createConstrain(1, 3);
+	body.c(id).flags(ConstrainFlags::WORKS_IF_GREATER).distance(2.0f);
 
-	//	id = body.createConstrain(0, 1);
-	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
-	//	id = body.createConstrain(1, 2);
-	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
-	//	id = body.createConstrain(2, 3);
-	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
-	//	id = body.createConstrain(3, 0);
-	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
-	//	id = body.createConstrain(0, 2);
-	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
-	//	id = body.createConstrain(1, 3);
-	//	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	id = body.createConstrain(0, 1);
+	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	id = body.createConstrain(1, 2);
+	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	id = body.createConstrain(2, 3);
+	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	id = body.createConstrain(3, 0);
+	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	id = body.createConstrain(0, 2);
+	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
+	id = body.createConstrain(1, 3);
+	body.c(id).flags(ConstrainFlags::USE_HOOK_COEFF).hookCoeff(Coeff);
 
 	ShellDef shell;
 	shell.edges.push_back({0, 1, 0.3f});
@@ -177,7 +177,7 @@ int main() {
 
 	//	body = makePlate(world, {1, 1});
 	//	auto body = makePlate(world, {1, 5});
-	auto body = makeCube(world, {1, 4});
+	auto body = makeCube(world, {10, 5});
 
 	//	{
 	//		auto bodyId1 = world.create(soften::GroupDef());
@@ -246,7 +246,7 @@ int main() {
 						minIdx = i;
 					}
 				}
-				body.c(mouseCId).flags(ConstrainFlags::NONE);
+				body.c(mouseCId).flags(ConstrainFlags::WORKS_IF_GREATER);
 				body.c(mouseCId).i(mouseId);
 				body.c(mouseCId).j(PointIdx(minIdx));
 				body.p(mouseId).position(mouse);
@@ -262,14 +262,13 @@ int main() {
 					soften::Vec2 mouse = {rawPos.x, rawPos.y};
 					body.p(mouseId).position(mouse);
 				}
+			} else if (event.type == sf::Event::EventType::KeyReleased) {
+				auto rawPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+				soften::Vec2 mouse = {rawPos.x, rawPos.y};
+				static int i = 0;
+				makeCube(world, mouse);
+				std::cout << ++i << std::endl;
 			}
-			//			else if (event.type == sf::Event::EventType::KeyReleased) {
-			//				auto rawPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-			//				soften::Vec2 mouse = {rawPos.x, rawPos.y};
-			//				static int i = 0;
-			//				makeCube(world, mouse);
-			//				std::cout << ++i << std::endl;
-			//			}
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)) {

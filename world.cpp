@@ -30,14 +30,9 @@ float get_ub<Rect2, float>(uint i, const Rect2& aabb) {
 
 } // namespace biss
 
-// TODO: optimise
-static bool isIntersecting(const Vec2& p1, const Vec2& p2, const Vec2& q1, const Vec2& q2, Vec2& inter) {
-	wykobi::point2d<float> p;
+static bool isIntersecting(const Vec2& p1, const Vec2& p2, const Vec2& q1, const Vec2& q2) {
 	if (wykobi::intersect((wykobi::point2d<float>)p1, (wykobi::point2d<float>)p2, (wykobi::point2d<float>)q1,
-	        (wykobi::point2d<float>)q2, p)) {
-		inter.x = p.x;
-		inter.y = p.y;
-
+	        (wykobi::point2d<float>)q2)) {
 		return true;
 	}
 
@@ -59,13 +54,32 @@ static bool isIntersecting(const decltype(Shell::edges)& edges, const DynArray<P
 		const Vec2& l1 = points[e.i].p2;
 		const Vec2& l2 = points[e.j].p2;
 
-		Vec2 _;
-		if (isIntersecting(l1, l2, p, inf, _)) {
+		if (isIntersecting(l1, l2, p, inf)) {
 			++count;
 		}
 	}
 
 	return count % 2 == 1;
+}
+
+// TODO: optimise
+static bool isIntersecting(const decltype(Shell::edges)& edges, const DynArray<Point>& points, const Vec2& p,
+    const Vec2& n, biss::index_t& edgeIdx) {
+
+	Vec2 inf = p + (n * 1000);
+
+	for (size_t i = 0; i != edges.size(); ++i) {
+		const auto& e = edges[i];
+		const Vec2& l1 = points[e.i].p2;
+		const Vec2& l2 = points[e.j].p2;
+
+		if (isIntersecting(l1, l2, p, inf)) {
+			edgeIdx = i;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 GroupId World::create(const GroupDef& def) {
@@ -158,8 +172,9 @@ void World::updateShells(Group& group) {
 		}
 
 		for (auto& p : group.points) {
-			if (!(other.interactBits & group.interactBits) || !(p.flags & PointFlags::INTERACTIVE) ||
-			    !isIntersecting(other.aabb, p.p2) || !::isIntersecting(other.shell.edges, other.points, p.p2)) {
+			if (!(other.interactBits & group.interactBits) || (p.flags & PointFlags::SHELL) ||
+			    !(p.flags & PointFlags::INTERACTIVE) || !isIntersecting(other.aabb, p.p2) ||
+			    !::isIntersecting(other.shell.edges, other.points, p.p2)) {
 				continue;
 			}
 
@@ -227,67 +242,63 @@ void World::updateShells(Group& group) {
 			auto& pl = group.points[group.shell.edges[(j + 1) % group.shell.edges.size()].j];
 
 			if (!(other.interactBits & group.interactBits) || p.flags & PointFlags::STATIC ||
-			    !(p.flags & PointFlags::SHELL) || !isIntersecting(other.aabb, p.p2) ||
-			    !::isIntersecting(other.shell.edges, other.points, p.p2)) {
+			    !(p.flags & PointFlags::SHELL) || !isIntersecting(other.aabb, p.p2)) {
 				continue;
 			}
 
 			const auto lr = (pr.p2 - p.p2);
 			const auto ll = (pl.p2 - p.p2);
 
-			const auto pn = fast_sign(ll.cross(lr)) * ((pl.p2 - p.p2).fastN() + (pr.p2 - p.p2).fastN()).fastN();
+			const auto pn = ((pl.p2 - p.p2).fastN() + (pr.p2 - p.p2).fastN()).fastN();
 
-			auto& edges = other.shell.edges;
-			auto& points = other.points;
-
-			float minPenetration = std::numeric_limits<float>::max();
-			size_t minIdx = -1;
-			Vec2 minN;
-
-			for (size_t i = 0; i != edges.size(); ++i) {
-				const auto& e = edges[i];
-				const Vec2& l1 = points[e.i].p2;
-				const Vec2& l2 = points[e.j].p2;
-
-				if (points[e.i].is(PointFlags::STATIC) && points[e.j].is(PointFlags::STATIC) &&
-				    p.is(PointFlags::STATIC)) {
-					continue;
-				}
-
-				const Vec2& l = (l2 - l1);
-				const Vec2& n = Vec2(l.y, -l.x).fastN();
-				const auto penetration = (l2 - p.p2) * n;
-				if (pn * n > 0 && penetration < minPenetration) {
-					minPenetration = penetration;
-					minN = n;
-					minIdx = i;
-				}
-			}
-			if (minIdx == -1) {
+			biss::index_t edgeIdx;
+			if (!::isIntersecting(other.shell.edges, other.points, p.p2, pn, edgeIdx)) {
 				continue;
 			}
 
+			const auto& e = other.shell.edges[edgeIdx];
+			const Vec2& l1 = other.points[e.i].p2;
+			const Vec2& l2 = other.points[e.j].p2;
+
+			auto& l1p = other.points[e.i];
+			auto& l2p = other.points[e.j];
+
+			if (other.points[e.i].is(PointFlags::STATIC) && other.points[e.j].is(PointFlags::STATIC) &&
+			    p.is(PointFlags::STATIC)) {
+				continue;
+			}
+
+			Vec2 l = (l2 - l1);
+			const Vec2& n = Vec2(-l.y, l.x).fastN();
+			const auto penetration = (l2 - p.p2) * n;
+
 			// TODO: Change to more physics formula
-			const auto dPenetration = minPenetration * minN;
-			const auto& e = edges[minIdx];
-			auto& l1 = points[e.i];
-			auto& l2 = points[e.j];
+			const auto dPenetration = penetration * n;
 
-			const auto& l = (l2.p2 - l1.p2).fastN();
-			const float a1 = l * (p.p2 - l1.p2);
-			const float a2 = l * (l2.p2 - p.p2);
+			l = l.fastN();
+			const float a1 = l * (p.p2 - l1);
+			const float a2 = l * (l2 - p.p2);
 
-			const float staticM = 1000 * std::max(std::max(l1.m, l2.m), p.m);
-			float l1m = l1.is(PointFlags::STATIC) ? staticM : l1.m;
-			float l2m = l2.is(PointFlags::STATIC) ? staticM : l2.m;
+			const float staticM = 1000 * std::max(std::max(l1p.m, l2p.m), p.m);
+			float l1m = l1p.is(PointFlags::STATIC) ? staticM : l1p.m;
+			float l2m = l2p.is(PointFlags::STATIC) ? staticM : l2p.m;
 			float pm = p.is(PointFlags::STATIC) ? staticM : p.m;
 
+//			auto blockV = [step = _lastStep](Point& p) {
+//				const auto l = p.p2 - p.p1;
+//				const auto ml = l.length();
+//				const float maxDp = 5.0f;
+//				if (ml / step > maxDp) {
+//					p.p1 = p.p2 - maxDp * step * (l / ml);
+//				}
+//			};
+
 			const float devider = (l1m * l2m + (l1m + l2m) * pm);
-			if (!l1.is(PointFlags::STATIC)) {
-				l1.p2 -= a2 * dPenetration * pm * l2m / devider;
+			if (!l1p.is(PointFlags::STATIC)) {
+				l1p.p2 -= a2 * dPenetration * pm * l2m / devider;
 			}
-			if (!l2.is(PointFlags::STATIC)) {
-				l2.p2 -= a1 * dPenetration * l2m * pm / devider;
+			if (!l2p.is(PointFlags::STATIC)) {
+				l2p.p2 -= a1 * dPenetration * l2m * pm / devider;
 			}
 			if (!p.is(PointFlags::STATIC)) {
 				p.p2 += dPenetration * l1m * l2m / devider;
@@ -308,12 +319,6 @@ void World::updatePosition(Group& group, float step) {
 		auto p2 = p.p2 + (p.p2 - p.p1) * stepRatio + (_gravity * step * step);
 		p.p1 = p.p2;
 		p.p2 = p2;
-//				const auto l = p.p2 - p.p1;
-//				const auto ml = l.length();
-//				const float maxDp = 10000.0f;
-//				if (ml / step > maxDp) {
-//					p.p1 = p.p2 - maxDp*step *(l / ml);
-//				}
 	}
 }
 
@@ -373,18 +378,12 @@ void World::updateConstrain(Group& group, float step) {
 }
 
 void World::updateCenter(Group& group) {
-	for (auto& g : _groups) {
-		if (g.points.empty()) {
-			continue;
-		}
-
-		Vec2 center{0, 0};
-		for (const auto& p : g.points) {
-			center += p.p2;
-		}
-		g.center = center / g.points.size();
+	Vec2 center{0, 0};
+	for (const auto& p : group.points) {
+		center += p.p2;
 	}
+	group.center = center / group.points.size();
 }
 
-World::World(): _groups(0.1f, 2) {
+World::World(): _groups(0.1f, 4) {
 }
