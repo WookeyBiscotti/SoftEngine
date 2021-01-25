@@ -5,7 +5,6 @@
 #include "../shell/shell.hpp"
 #include "../utils/rect2.hpp"
 #include "../utils/types.hpp"
-#include "group_id.hpp"
 
 namespace soften {
 
@@ -17,7 +16,7 @@ struct Group {
 	Rect2 aabb;
 	Vec2 center;
 
-	GroupId id;
+	Id id;
 	uint32_t interactBits = std::numeric_limits<uint32_t>::max();
 };
 

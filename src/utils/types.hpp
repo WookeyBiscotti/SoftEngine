@@ -9,7 +9,7 @@
 template<class T>
 using DynArray = std::vector<T>;
 
-using Id = std::size_t;
+using Id = biss::index_t;
 
 using Idx = std::size_t;
 

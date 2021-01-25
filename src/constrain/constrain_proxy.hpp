@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../point/point_id.hpp"
 #include "../utils/types.hpp"
 #include "constrain.hpp"
 
@@ -14,11 +13,11 @@ class ConstrainProxy final {
 	FlagsStorage flags() const;
 	ConstrainProxy& flags(FlagsStorage flags);
 
-	void i(PointIdx i) { _constrain->i = i.idx; }
-	PointIdx i() const { return PointIdx(_constrain->i); }
+	void i(Id i) { _constrain->i = i; }
+	Id i() const { return Id(_constrain->i); }
 
-	void j(PointIdx j) { _constrain->j = j.idx; }
-	PointIdx j() const { return PointIdx(_constrain->j); }
+	void j(Id j) { _constrain->j = j; }
+	Id j() const { return Id(_constrain->j); }
 
 	float hookCoeff() const;
 	ConstrainProxy& hookCoeff(float coeff);

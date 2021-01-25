@@ -3,7 +3,6 @@
 #include "constrain/constrain.hpp"
 #include "group/group.hpp"
 #include "group/group_def.hpp"
-#include "group/group_id.hpp"
 #include "group/group_proxy.hpp"
 #include "point/point.hpp"
 #include "utils/types.hpp"
@@ -30,8 +29,8 @@ class World {
 	  private:
 		explicit GroupIterator(AABB2DTree<Group>& groups, AABB2DTree<Group>::Iterator it): _it(it), _groups(groups) {}
 
-        AABB2DTree<Group>::Iterator _it;
-        AABB2DTree<Group>& _groups;
+		AABB2DTree<Group>::Iterator _it;
+		AABB2DTree<Group>& _groups;
 	};
 
 	World();
@@ -44,16 +43,18 @@ class World {
 
 	void update(float step, int iterations = 10);
 
-	GroupId create(const GroupDef& def);
-	GroupProxy get(GroupId id);
+	Id create(const GroupDef& def);
+	GroupProxy get(Id id);
 
-	//	template<class Fn>
-	//	void queryShell(const Rect2& rect) {
-	//		//TODO: Optimize
-	//		for(const auto& g: _groups) {
-	//			if(isIntersecting(rect, g.))
-	//		}
-	//	}
+	void remove(Id id);
+
+	Id create(const PointDef& point);
+	Id create(const ConstrainDef& constrain);
+
+	template<class Fn>
+	void query(const Rect2& rect, Fn fn) {
+		_groups.template query(rect, fn);
+	}
 
   private:
 	void updateAABB(Group& group);
@@ -61,12 +62,17 @@ class World {
 	void updateShells(Group& group);
 	void updatePosition(Group& group, float step);
 	void updateConstrain(Group& group, float step);
+	void updateGlobalPoints(float step);
+
+	void interactPoint(Point& p);
 
   private:
 	float _lastStep = std::numeric_limits<float>::signaling_NaN();
 	Vec2 _gravity{0, 0};
 
-    AABB2DTree<Group> _groups;
+	AABB2DTree<Group> _groups;
+	AABB2DTree<Point> _globalPoints;
+	Index<Constrain> _constrains;
 };
 
 } // namespace soften

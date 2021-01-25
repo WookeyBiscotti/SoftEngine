@@ -82,15 +82,15 @@ static bool isIntersecting(const decltype(Shell::edges)& edges, const DynArray<P
 	return false;
 }
 
-GroupId World::create(const GroupDef& def) {
+Id World::create(const GroupDef& def) {
 	const auto id = _groups.emplace({}, Group{});
-	_groups[id].id.id = id;
+	_groups[id].id = id;
 
-	return GroupId{id};
+	return Id{id};
 }
 
-GroupProxy World::get(GroupId id) {
-	return GroupProxy(_groups, id.id);
+GroupProxy World::get(Id id) {
+	return GroupProxy(_groups, id);
 }
 
 void World::update(float step, int iterations) {
@@ -112,14 +112,13 @@ void World::update(float step, int iterations) {
 		const auto oldCenter = g.center;
 		updateCenter(g);
 
-		_groups.update(g.id.id, g.aabb, g.center - oldCenter);
+		_groups.update(g.id, g.aabb, g.center - oldCenter);
 	}
 
 	_lastStep = step / iterations;
 }
 
 void World::updateAABB(Group& g) {
-	// TODO: optimize
 	if (g.points.empty()) {
 		return;
 	}
@@ -152,12 +151,6 @@ void World::updateAABB(Group& g) {
 	} else {
 		g.aabb = {};
 	}
-}
-
-inline float fast_sign(float f) {
-	if (f > 0)
-		return 1;
-	return (f == 0) ? 0 : -1;
 }
 
 void World::updateShells(Group& group) {
@@ -284,15 +277,6 @@ void World::updateShells(Group& group) {
 			float l2m = l2p.is(PointFlags::STATIC) ? staticM : l2p.m;
 			float pm = p.is(PointFlags::STATIC) ? staticM : p.m;
 
-//			auto blockV = [step = _lastStep](Point& p) {
-//				const auto l = p.p2 - p.p1;
-//				const auto ml = l.length();
-//				const float maxDp = 5.0f;
-//				if (ml / step > maxDp) {
-//					p.p1 = p.p2 - maxDp * step * (l / ml);
-//				}
-//			};
-
 			const float devider = (l1m * l2m + (l1m + l2m) * pm);
 			if (!l1p.is(PointFlags::STATIC)) {
 				l1p.p2 -= a2 * dPenetration * pm * l2m / devider;
@@ -386,4 +370,34 @@ void World::updateCenter(Group& group) {
 }
 
 World::World(): _groups(0.1f, 4) {
+}
+
+void World::remove(Id id) {
+	_groups.remove(id);
+}
+
+Id World::create(const PointDef& point) {
+	return _globalPoints.emplace(Rect2{point.p2, point.p2}, point.p2, point.flags);
+}
+
+void World::updateGlobalPoints(float step) {
+	for (auto& p : _globalPoints) {
+		if (p.is(PointFlags::STATIC)) {
+			continue;
+		}
+		auto p2 = p.p2 + (p.p2 - p.p1) * step + (_gravity * step * step);
+		p.p1 = p.p2;
+		p.p2 = p2;
+
+		if (p.is(PointFlags::INTERACTIVE)) {
+			_groups.query(Rect2{p.p2, p.p2}, [](biss::index_t idx) { return true; });
+		}
+	}
+}
+
+void World::interactPoint(Point& p) {
+}
+
+Id World::create(const ConstrainDef& constrain) {
+//	return _constrains.emplace(constrain.i, constrain.i, constrain.distance, constrain.flags);
 }

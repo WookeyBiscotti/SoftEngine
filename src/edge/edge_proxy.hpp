@@ -9,8 +9,8 @@ class EdgeProxy {
 	friend class ShellProxy;
 
   public:
-	PointIdx i() const { return _edge->i; }
-	PointIdx j() const { return _edge->j; }
+	Id i() const { return _edge->i; }
+	Id j() const { return _edge->j; }
 
 	float friction() const { return _edge->friction; }
 	void friction(float friction) { _edge->friction = friction; }
